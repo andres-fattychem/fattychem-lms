@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fatty Chem LMS — Admin</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#f4f5f7;color:#1a1a1a;min-height:100vh}
+input,select,button{font-family:inherit}
+
+/* Login */
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:#1a1a1a}
+.login-card{background:#fff;border-radius:16px;padding:48px;width:360px;text-align:center}
+.login-card .brand{font-size:28px;font-weight:700;color:#1a1a1a;margin-bottom:4px}.login-card .brand span{color:#e8a020}
+.login-card .sub{font-size:12px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:32px}
+.login-card input{width:100%;padding:12px 16px;border:2px solid #e5e7eb;border-radius:8px;font-size:14px;margin-bottom:12px;outline:none}
+.login-card input:focus{border-color:#e8a020}
+.login-card .err{color:#c0392b;font-size:13px;margin-bottom:10px;display:none}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s}
+.btn-primary{background:#e8a020;color:#1a1a1a}.btn-primary:hover{background:#d09010}
+.btn-secondary{background:#f4f5f7;color:#555;border:1px solid #e5e7eb}.btn-secondary:hover{background:#e8eaed}
+.btn-danger{background:#fff5f5;color:#c0392b;border:1px solid #f0a0a0}.btn-danger:hover{background:#ffe8e8}
+.btn-sm{padding:6px 14px;font-size:12px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.login-card .btn{width:100%;justify-content:center;padding:14px}
+
+/* App shell */
+#app{display:none;min-height:100vh}
+#topbar{background:#1a1a1a;padding:0 32px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+#topbar .brand{font-size:18px;font-weight:700;color:#fff}.brand span{color:#e8a020}
+#topbar .sub{font-size:11px;color:#666;margin-top:2px}
+#topbar .right{display:flex;align-items:center;gap:12px}
+#topbar .admin-label{font-size:12px;color:#888}
+
+#nav{background:#fff;border-bottom:1px solid #e5e7eb;padding:0 32px;display:flex;gap:4px}
+.nav-tab{padding:14px 20px;font-size:13px;font-weight:600;cursor:pointer;border-bottom:3px solid transparent;color:#888;transition:all .15s}
+.nav-tab:hover{color:#1a1a1a}
+.nav-tab.active{color:#1a1a1a;border-bottom-color:#e8a020}
+
+#main-content{padding:32px;max-width:1100px}
+
+/* Cards */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
+.stat-card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:20px}
+.stat-card .n{font-size:32px;font-weight:700;color:#e8a020}
+.stat-card .l{font-size:12px;color:#888;margin-top:4px}
+
+.card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;margin-bottom:20px}
+.card-header{padding:18px 24px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between}
+.card-header h3{font-size:15px;font-weight:700}
+.card-body{padding:20px 24px}
+
+/* Tables */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:#f9f9f9;padding:10px 14px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#888;border-bottom:1px solid #e5e7eb}
+td{padding:10px 14px;border-bottom:1px solid #f0f0f0;color:#444;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafafa}
+
+/* Badges */
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-green{background:#e8f4e8;color:#2d6a2d}
+.badge-orange{background:#fff4dc;color:#b87b00}
+.badge-gray{background:#f4f5f7;color:#888}
+.badge-red{background:#fff0f0;color:#c0392b}
+
+/* Forms */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-group label{font-size:12px;font-weight:600;color:#555}
+.form-group input,.form-group select{padding:10px 14px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:13px;outline:none}
+.form-group input:focus,.form-group select:focus{border-color:#e8a020}
+.form-actions{display:flex;gap:10px;margin-top:8px}
+
+/* Modal */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:16px;padding:32px;width:480px;max-width:95vw}
+.modal h3{font-size:18px;font-weight:700;margin-bottom:20px}
+.modal .close{position:absolute;right:16px;top:16px;cursor:pointer;color:#888;font-size:20px}
+
+/* Alerts */
+.alert{padding:12px 16px;border-radius:8px;font-size:13px;margin-bottom:12px;display:none}
+.alert-success{background:#e8f4e8;color:#2d6a2d;border:1px solid #90c890}
+.alert-error{background:#fff0f0;color:#c0392b;border:1px solid #f0a0a0}
+.alert.show{display:block}
+
+/* Course cards */
+.course-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.course-card{border:1px solid #e5e7eb;border-radius:12px;padding:20px;background:#fff}
+.course-card .ctag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#e8a020;margin-bottom:8px}
+.course-card h4{font-size:15px;font-weight:700;color:#1a1a1a;margin-bottom:6px}
+.course-card p{font-size:12px;color:#777;line-height:1.5;margin-bottom:16px}
+.course-card .cmeta{display:flex;gap:16px;font-size:12px;color:#888;margin-bottom:16px}
+
+/* Progress bar inline */
+.prog-bar{height:6px;background:#e5e7eb;border-radius:3px;overflow:hidden;width:80px;display:inline-block;vertical-align:middle;margin-left:6px}
+.prog-fill{height:100%;background:#e8a020;border-radius:3px}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="brand">fatty<span>chem</span>®</div>
+    <div class="sub">LMS Admin Portal</div>
+    <div class="err" id="login-err">Incorrect password. Try again.</div>
+    <input type="password" id="login-pw" placeholder="Admin password" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="btn btn-primary" onclick="doLogin()">Sign In</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div id="topbar">
+    <div>
+      <div class="brand">fatty<span>chem</span>® <span style="font-weight:400;color:#666;font-size:14px">LMS Admin</span></div>
+    </div>
+    <div class="right">
+      <span class="admin-label">andres@fatty-chem.com</span>
+      <button class="btn btn-secondary btn-sm" onclick="showSettings()">⚙ Settings</button>
+      <button class="btn btn-secondary btn-sm" onclick="signOut()">Sign Out</button>
+    </div>
+  </div>
+
+  <div id="nav">
+    <div class="nav-tab active" onclick="showTab('dashboard')">Dashboard</div>
+    <div class="nav-tab" onclick="showTab('employees')">Employees</div>
+    <div class="nav-tab" onclick="showTab('courses')">Courses</div>
+    <div class="nav-tab" onclick="showTab('enrollments')">Enrollments</div>
+    <div class="nav-tab" onclick="showTab('settings')">Settings</div>
+  </div>
+
+  <div id="main-content">
+
+    <!-- DASHBOARD -->
+    <div id="tab-dashboard">
+      <h2 style="font-size:20px;font-weight:700;margin-bottom:20px">Dashboard</h2>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="n" id="stat-emp">–</div><div class="l">Employees</div></div>
+        <div class="stat-card"><div class="n" id="stat-enroll">–</div><div class="l">Active Enrollments</div></div>
+        <div class="stat-card"><div class="n" id="stat-complete">–</div><div class="l">Completed</div></div>
+        <div class="stat-card"><div class="n" id="stat-courses">2</div><div class="l">Courses Available</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3>Recent Enrollments</h3><button class="btn btn-primary btn-sm" onclick="showTab('enrollments')">View All</button></div>
+        <div class="card-body" id="dash-recent"><div style="color:#888;font-size:13px">Loading…</div></div>
+      </div>
+    </div>
+
+    <!-- EMPLOYEES -->
+    <div id="tab-employees" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <h2 style="font-size:20px;font-weight:700">Employees</h2>
+        <button class="btn btn-primary" onclick="openAddEmployee()">+ Add Employee</button>
+      </div>
+      <div class="alert alert-success" id="emp-success"></div>
+      <div class="alert alert-error" id="emp-error"></div>
+      <div class="card">
+        <div class="card-body" id="emp-table-wrap"><div style="color:#888;font-size:13px">Loading…</div></div>
+      </div>
+    </div>
+
+    <!-- COURSES -->
+    <div id="tab-courses" style="display:none">
+      <h2 style="font-size:20px;font-weight:700;margin-bottom:20px">Available Courses</h2>
+      <div class="course-grid">
+        <div class="course-card">
+          <div class="ctag">Course 1</div>
+          <h4>Houston Sales Representative Training</h4>
+          <p>Product knowledge, sales process, objection handling, and the Houston outreach playbook.</p>
+          <div class="cmeta"><span>4 modules</span><span>20 questions</span><span>~60 min</span></div>
+          <button class="btn btn-primary btn-sm" onclick="openAssign('houston-sales','Houston Sales Representative Training')">Assign to Employee</button>
+        </div>
+        <div class="course-card">
+          <div class="ctag">Course 2</div>
+          <h4>Route & Logistics Operations Training</h4>
+          <p>UCO collection operations, route management, customer handling, safety, and equipment protocols.</p>
+          <div class="cmeta"><span>4 modules</span><span>20 questions</span><span>~60 min</span></div>
+          <button class="btn btn-primary btn-sm" onclick="openAssign('route-logistics','Route & Logistics Operations Training')">Assign to Employee</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ENROLLMENTS -->
+    <div id="tab-enrollments" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <h2 style="font-size:20px;font-weight:700">Enrollments & Progress</h2>
+        <button class="btn btn-secondary btn-sm" onclick="loadEnrollments()">↻ Refresh</button>
+      </div>
+      <div class="card">
+        <div class="card-body" id="enroll-table-wrap"><div style="color:#888;font-size:13px">Loading…</div></div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="tab-settings" style="display:none">
+      <h2 style="font-size:20px;font-weight:700;margin-bottom:20px">Settings</h2>
+      <div class="card">
+        <div class="card-header"><h3>Backend Connection</h3></div>
+        <div class="card-body">
+          <div class="form-group" style="margin-bottom:14px">
+            <label>Google Apps Script URL</label>
+            <input type="text" id="setting-script-url" placeholder="https://script.google.com/macros/s/...">
+          </div>
+          <div class="form-group" style="margin-bottom:14px">
+            <label>Course Player URL (lms-course.html hosted URL)</label>
+            <input type="text" id="setting-course-url" placeholder="https://your-domain.com/lms-course.html">
+          </div>
+          <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+          <div class="alert alert-success" id="settings-ok" style="margin-top:10px"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3>Change Admin Password</h3></div>
+        <div class="card-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label>New Password</label>
+              <input type="password" id="new-pw" placeholder="New password">
+            </div>
+            <div class="form-group">
+              <label>Confirm Password</label>
+              <input type="password" id="confirm-pw" placeholder="Confirm">
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="changePassword()">Update Password</button>
+          <div class="alert alert-success" id="pw-ok" style="margin-top:10px"></div>
+          <div class="alert alert-error" id="pw-err" style="margin-top:10px"></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- main-content -->
+</div><!-- app -->
+
+<!-- MODALS -->
+<div class="modal-bg" id="modal-add-emp">
+  <div class="modal" style="position:relative">
+    <span class="close" onclick="closeModal('modal-add-emp')">✕</span>
+    <h3>Add Employee</h3>
+    <div class="form-row">
+      <div class="form-group"><label>Full Name *</label><input type="text" id="new-emp-name" placeholder="Maria Lopez"></div>
+      <div class="form-group"><label>Email *</label><input type="email" id="new-emp-email" placeholder="maria@fatty-chem.com"></div>
+    </div>
+    <div class="form-group" style="margin-bottom:16px">
+      <label>Role</label>
+      <input type="text" id="new-emp-role" placeholder="Sales Representative – Houston">
+    </div>
+    <div class="alert alert-error" id="add-emp-err"></div>
+    <div class="form-actions">
+      <button class="btn btn-primary" onclick="addEmployee()">Add Employee</button>
+      <button class="btn btn-secondary" onclick="closeModal('modal-add-emp')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-assign">
+  <div class="modal" style="position:relative">
+    <span class="close" onclick="closeModal('modal-assign')">✕</span>
+    <h3 id="assign-title">Assign Course</h3>
+    <input type="hidden" id="assign-course-id">
+    <div class="form-group" style="margin-bottom:16px">
+      <label>Select Employee *</label>
+      <select id="assign-emp-select"><option value="">Loading employees…</option></select>
+    </div>
+    <div class="alert alert-error" id="assign-err"></div>
+    <div class="alert alert-success" id="assign-ok"></div>
+    <div class="form-actions">
+      <button class="btn btn-primary" onclick="assignCourse()">Assign & Send Email</button>
+      <button class="btn btn-secondary" onclick="closeModal('modal-assign')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Config ────────────────────────────────────────────────────────
+let SCRIPT_URL = localStorage.getItem('fc_lms_script_url') || '';
+let COURSE_URL = localStorage.getItem('fc_lms_course_url') || '';
+let adminKey   = '';
+
+// ── Auth ──────────────────────────────────────────────────────────
+async function doLogin() {
+  const pw = document.getElementById('login-pw').value.trim();
+  if (!pw) return;
+  if (!SCRIPT_URL) {
+    // Allow offline access to settings only
+    adminKey = pw;
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    showTab('settings');
+    return;
+  }
+  try {
+    const res = await api({action:'adminAuth', password: pw});
+    if (res.success) {
+      adminKey = res.adminKey;
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      showTab('dashboard');
+      loadDashboard();
+    } else {
+      document.getElementById('login-err').style.display = 'block';
+    }
+  } catch(e) {
+    adminKey = pw;
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    showTab('settings');
+  }
+}
+
+function signOut() {
+  adminKey = '';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-pw').value = '';
+}
+
+// ── API ───────────────────────────────────────────────────────────
+async function api(body) {
+  if (!SCRIPT_URL) throw new Error('Script URL not configured. Go to Settings.');
+  const res = await fetch(SCRIPT_URL, {method:'POST', body: JSON.stringify(body)});
+  return res.json();
+}
+
+// ── Tabs ──────────────────────────────────────────────────────────
+function showTab(name) {
+  document.querySelectorAll('[id^="tab-"]').forEach(el => el.style.display = 'none');
+  document.getElementById('tab-' + name).style.display = 'block';
+  document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+  const tabs = ['dashboard','employees','courses','enrollments','settings'];
+  const idx  = tabs.indexOf(name);
+  if (idx >= 0) document.querySelectorAll('.nav-tab')[idx].classList.add('active');
+  if (name === 'dashboard')   loadDashboard();
+  if (name === 'employees')   loadEmployees();
+  if (name === 'enrollments') loadEnrollments();
+  if (name === 'settings')    loadSettings();
+}
+
+function showSettings() { showTab('settings'); }
+
+// ── Dashboard ──────────────────────────────────────────────────────
+async function loadDashboard() {
+  try {
+    const [empRes, enrollRes] = await Promise.all([
+      api({action:'getEmployees', adminKey}),
+      api({action:'getEnrollments', adminKey})
+    ]);
+    const emps    = empRes.employees || [];
+    const enrolls = enrollRes.enrollments || [];
+    const completed = enrolls.filter(e => e.status === 'completed').length;
+    const active    = enrolls.filter(e => e.status !== 'completed').length;
+    document.getElementById('stat-emp').textContent      = emps.length;
+    document.getElementById('stat-enroll').textContent   = active;
+    document.getElementById('stat-complete').textContent = completed;
+
+    const recent = enrolls.slice(-6).reverse();
+    const html = recent.length ? `<table>
+      <tr><th>Employee</th><th>Course</th><th>Assigned</th><th>Status</th><th>Progress</th></tr>
+      ${recent.map(e => `<tr>
+        <td><strong>${esc(e.employeeName)}</strong><br><span style="font-size:11px;color:#888">${esc(e.employeeEmail)}</span></td>
+        <td>${esc(e.courseName)}</td>
+        <td>${fmtDate(e.assignedDate)}</td>
+        <td>${statusBadge(e.status)}</td>
+        <td>${progCell(e)}</td>
+      </tr>`).join('')}
+    </table>` : '<div style="color:#888;font-size:13px">No enrollments yet. Go to Courses to assign training.</div>';
+    document.getElementById('dash-recent').innerHTML = html;
+  } catch(err) {
+    document.getElementById('dash-recent').innerHTML = `<div style="color:#c0392b;font-size:13px">⚠ ${err.message}</div>`;
+  }
+}
+
+// ── Employees ─────────────────────────────────────────────────────
+let _employees = [];
+async function loadEmployees() {
+  document.getElementById('emp-table-wrap').innerHTML = '<div style="color:#888;font-size:13px">Loading…</div>';
+  try {
+    const res = await api({action:'getEmployees', adminKey});
+    _employees = res.employees || [];
+    renderEmployeeTable();
+  } catch(err) {
+    document.getElementById('emp-table-wrap').innerHTML = `<div style="color:#c0392b;font-size:13px">⚠ ${err.message}</div>`;
+  }
+}
+
+function renderEmployeeTable() {
+  if (!_employees.length) {
+    document.getElementById('emp-table-wrap').innerHTML = '<div style="color:#888;font-size:13px">No employees yet. Click "Add Employee" to get started.</div>';
+    return;
+  }
+  document.getElementById('emp-table-wrap').innerHTML = `<table>
+    <tr><th>Name</th><th>Email</th><th>Role</th><th>Added</th><th></th></tr>
+    ${_employees.map(e => `<tr>
+      <td><strong>${esc(e.name)}</strong></td>
+      <td>${esc(e.email)}</td>
+      <td>${esc(e.role||'—')}</td>
+      <td>${fmtDate(e.dateAdded)}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteEmployee('${e.id}','${esc(e.name)}')">Remove</button></td>
+    </tr>`).join('')}
+  </table>`;
+}
+
+function openAddEmployee() {
+  ['new-emp-name','new-emp-email','new-emp-role'].forEach(id => document.getElementById(id).value = '');
+  flashAlert('add-emp-err', '', false);
+  openModal('modal-add-emp');
+}
+
+async function addEmployee() {
+  const name  = document.getElementById('new-emp-name').value.trim();
+  const email = document.getElementById('new-emp-email').value.trim();
+  const role  = document.getElementById('new-emp-role').value.trim();
+  if (!name || !email) { flashAlert('add-emp-err','Name and email are required.', true); return; }
+  try {
+    const res = await api({action:'addEmployee', adminKey, name, email, role});
+    if (res.success) {
+      closeModal('modal-add-emp');
+      flashAlert('emp-success', `${name} added successfully.`, true);
+      loadEmployees();
+    } else {
+      flashAlert('add-emp-err', res.error || 'Error adding employee.', true);
+    }
+  } catch(err) { flashAlert('add-emp-err', err.message, true); }
+}
+
+async function deleteEmployee(id, name) {
+  if (!confirm(`Remove ${name} from the system?`)) return;
+  try {
+    await api({action:'deleteEmployee', adminKey, employeeId: id});
+    loadEmployees();
+  } catch(err) { alert(err.message); }
+}
+
+// ── Assign ────────────────────────────────────────────────────────
+function openAssign(courseId, courseTitle) {
+  document.getElementById('assign-course-id').value = courseId;
+  document.getElementById('assign-title').textContent = 'Assign: ' + courseTitle;
+  flashAlert('assign-err','',false); flashAlert('assign-ok','',false);
+  const sel = document.getElementById('assign-emp-select');
+  if (_employees.length) {
+    sel.innerHTML = '<option value="">Select an employee…</option>' + _employees.map(e => `<option value="${e.id}">${esc(e.name)} — ${esc(e.email)}</option>`).join('');
+  } else {
+    api({action:'getEmployees', adminKey}).then(res => {
+      _employees = res.employees || [];
+      sel.innerHTML = '<option value="">Select an employee…</option>' + _employees.map(e => `<option value="${e.id}">${esc(e.name)} — ${esc(e.email)}</option>`).join('');
+    });
+  }
+  openModal('modal-assign');
+}
+
+async function assignCourse() {
+  const courseId = document.getElementById('assign-course-id').value;
+  const empId    = document.getElementById('assign-emp-select').value;
+  if (!empId) { flashAlert('assign-err','Please select an employee.', true); return; }
+  try {
+    const res = await api({action:'assignCourse', adminKey, employeeId: empId, courseId});
+    if (res.success) {
+      flashAlert('assign-ok','✓ Assigned! Invite email sent.', true);
+      setTimeout(() => closeModal('modal-assign'), 2000);
+    } else {
+      flashAlert('assign-err', res.error || 'Could not assign.', true);
+    }
+  } catch(err) { flashAlert('assign-err', err.message, true); }
+}
+
+// ── Enrollments ───────────────────────────────────────────────────
+async function loadEnrollments() {
+  document.getElementById('enroll-table-wrap').innerHTML = '<div style="color:#888;font-size:13px">Loading…</div>';
+  try {
+    const res = await api({action:'getEnrollments', adminKey});
+    const enrolls = res.enrollments || [];
+    if (!enrolls.length) {
+      document.getElementById('enroll-table-wrap').innerHTML = '<div style="color:#888;font-size:13px">No enrollments yet.</div>';
+      return;
+    }
+    document.getElementById('enroll-table-wrap').innerHTML = `<table>
+      <tr><th>Employee</th><th>Course</th><th>Assigned</th><th>Status</th><th>Progress</th><th>Score</th><th></th></tr>
+      ${enrolls.map(e => `<tr>
+        <td><strong>${esc(e.employeeName)}</strong><br><span style="font-size:11px;color:#888">${esc(e.employeeEmail)}</span></td>
+        <td>${esc(e.courseName)}</td>
+        <td>${fmtDate(e.assignedDate)}</td>
+        <td>${statusBadge(e.status)}</td>
+        <td>${progCell(e)}</td>
+        <td>${e.finalScore ? e.finalScore + '%' : '—'}</td>
+        <td>
+          <button class="btn btn-secondary btn-sm" onclick="resendInvite('${e.token}','${esc(e.employeeName)}')" title="Resend invite email">✉ Resend</button>
+        </td>
+      </tr>`).join('')}
+    </table>`;
+  } catch(err) {
+    document.getElementById('enroll-table-wrap').innerHTML = `<div style="color:#c0392b;font-size:13px">⚠ ${err.message}</div>`;
+  }
+}
+
+async function resendInvite(token, name) {
+  try {
+    await api({action:'resendInvite', adminKey, token});
+    alert(`Invite email resent to ${name}.`);
+  } catch(err) { alert(err.message); }
+}
+
+// ── Settings ──────────────────────────────────────────────────────
+function loadSettings() {
+  document.getElementById('setting-script-url').value = localStorage.getItem('fc_lms_script_url') || '';
+  document.getElementById('setting-course-url').value = localStorage.getItem('fc_lms_course_url') || '';
+}
+
+function saveSettings() {
+  SCRIPT_URL = document.getElementById('setting-script-url').value.trim();
+  COURSE_URL = document.getElementById('setting-course-url').value.trim();
+  localStorage.setItem('fc_lms_script_url', SCRIPT_URL);
+  localStorage.setItem('fc_lms_course_url', COURSE_URL);
+  flashAlert('settings-ok','Settings saved.', true);
+}
+
+async function changePassword() {
+  const np = document.getElementById('new-pw').value.trim();
+  const cp = document.getElementById('confirm-pw').value.trim();
+  flashAlert('pw-err','',false); flashAlert('pw-ok','',false);
+  if (!np) { flashAlert('pw-err','Enter a new password.',true); return; }
+  if (np !== cp) { flashAlert('pw-err','Passwords do not match.',true); return; }
+  try {
+    const res = await api({action:'changePassword', adminKey, newPassword: np});
+    if (res.success) {
+      adminKey = res.newKey;
+      flashAlert('pw-ok','Password updated.',true);
+      document.getElementById('new-pw').value = '';
+      document.getElementById('confirm-pw').value = '';
+    } else { flashAlert('pw-err', res.error || 'Error.', true); }
+  } catch(err) { flashAlert('pw-err', err.message, true); }
+}
+
+// ── Helpers ───────────────────────────────────────────────────────
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function flashAlert(id, msg, show) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.toggle('show', show);
+}
+
+function esc(str) {
+  return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function fmtDate(iso) {
+  if (!iso) return '—';
+  try { return new Date(iso).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}); }
+  catch { return iso; }
+}
+
+function statusBadge(status) {
+  const map = {
+    not_started: '<span class="badge badge-gray">Not Started</span>',
+    in_progress:  '<span class="badge badge-orange">In Progress</span>',
+    completed:    '<span class="badge badge-green">Completed</span>',
+  };
+  return map[status] || `<span class="badge badge-gray">${esc(status)}</span>`;
+}
+
+function progCell(e) {
+  const total = Number(e.totalModules) || 0;
+  const done  = Number(e.modulesCompleted) || 0;
+  if (!total) return '—';
+  const pct = Math.round(done/total*100);
+  return `${done}/${total} <div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div>`;
+}
+
+// ── Close modals on background click ─────────────────────────────
+document.querySelectorAll('.modal-bg').forEach(bg => {
+  bg.addEventListener('click', e => { if (e.target === bg) bg.classList.remove('open'); });
+});
+
+// ── Init ──────────────────────────────────────────────────────────
+document.getElementById('login-pw').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+</script>
+</body>
+</html>

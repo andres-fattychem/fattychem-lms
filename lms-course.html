@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fatty Chem Training</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#f4f5f7;color:#1a1a1a}
+input,select,button,textarea{font-family:inherit}
+
+/* Layout */
+#app{display:flex;min-height:100vh}
+#sidebar{width:290px;min-width:290px;background:#1a1a1a;color:#fff;position:fixed;top:0;left:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column;z-index:100}
+#main{margin-left:290px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+
+/* Sidebar */
+.sb-brand{padding:24px 22px 16px;border-bottom:1px solid #2a2a2a}
+.sb-brand .logo{font-size:20px;font-weight:700;color:#fff}.sb-brand .logo span{color:#e8a020}
+.sb-brand .tagline{font-size:11px;color:#666;margin-top:3px;text-transform:uppercase;letter-spacing:.8px}
+.sb-user{padding:14px 22px;border-bottom:1px solid #2a2a2a;font-size:12px;color:#888}
+.sb-user strong{color:#ccc;display:block;font-size:13px}
+.sb-course-title{padding:14px 22px 10px;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#555}
+
+.sb-progress-wrap{padding:0 22px 14px;border-bottom:1px solid #2a2a2a}
+.sb-progress-label{display:flex;justify-content:space-between;font-size:11px;color:#666;margin-bottom:6px}
+.prog-bar{height:5px;background:#333;border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;background:#e8a020;border-radius:3px;transition:width .4s ease}
+
+.sb-modules{padding:12px 0;flex:1}
+.sb-mod{padding:12px 22px;cursor:pointer;display:flex;align-items:center;gap:10px;border-left:3px solid transparent;transition:background .15s,border-color .15s}
+.sb-mod:hover{background:#252525}
+.sb-mod.active{background:#252525;border-left-color:#e8a020}
+.sb-mod.done .mod-num{background:#2d6a2d;color:#6fcf6f}
+.mod-num{width:26px;height:26px;border-radius:50%;background:#2a2a2a;color:#666;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.mod-info{flex:1}
+.mod-name{font-size:12px;font-weight:600;color:#ccc;line-height:1.3}
+.mod-sub{font-size:10px;color:#555;margin-top:2px}
+.mod-check{color:#6fcf6f;font-size:13px}
+
+.sb-footer{padding:16px 22px;border-top:1px solid #2a2a2a;font-size:11px;color:#444}
+
+/* Topbar */
+#topbar{background:#fff;border-bottom:1px solid #e5e7eb;height:56px;padding:0 36px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.tb-crumb{font-size:13px;color:#888}.tb-crumb strong{color:#1a1a1a}
+.tb-right{display:flex;align-items:center;gap:10px;font-size:12px;color:#888}
+
+/* Content */
+#content{padding:36px;max-width:820px}
+
+/* Module header */
+.mod-header{margin-bottom:28px}
+.mod-num-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#e8a020;margin-bottom:6px}
+.mod-title{font-size:26px;font-weight:700;color:#1a1a1a;margin-bottom:6px}
+.mod-desc{font-size:14px;color:#777;line-height:1.6}
+
+/* Content sections */
+.section{margin-bottom:32px}
+.section h2{font-size:17px;font-weight:700;color:#1a1a1a;margin-bottom:10px;padding-bottom:7px;border-bottom:2px solid #e8a020;display:inline-block}
+.section h3{font-size:14px;font-weight:700;color:#1a1a1a;margin:18px 0 6px}
+.section p{font-size:13.5px;color:#444;line-height:1.75;margin-bottom:10px}
+.section ul,.section ol{padding-left:20px;margin-bottom:10px}
+.section li{font-size:13.5px;color:#444;line-height:1.75;margin-bottom:3px}
+
+.info-box{background:#fff8e8;border:1px solid #f0d080;border-left:4px solid #e8a020;border-radius:8px;padding:14px 18px;margin:14px 0}
+.info-box p{font-size:13px;color:#7a5500;margin:0;line-height:1.6}
+.callout{background:#1a1a1a;color:#fff;border-radius:10px;padding:18px 22px;margin:18px 0}
+.callout .clabel{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:#e8a020;font-weight:700;margin-bottom:6px}
+.callout p{font-size:13.5px;color:#ccc;line-height:1.6;margin:0}
+.callout p strong{color:#fff}
+.script-box{background:#f8f9ff;border:1px solid #d0d8f0;border-left:4px solid #5b7fd4;border-radius:8px;padding:14px 18px;margin:14px 0;font-family:Georgia,serif}
+.script-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#5b7fd4;margin-bottom:8px;font-family:'Segoe UI',Arial,sans-serif}
+.script-box p{font-size:13.5px;color:#2a2a2a;line-height:1.7;margin-bottom:5px;font-style:italic}
+.script-box p:last-child{margin-bottom:0}
+
+/* Tables */
+.dtable{width:100%;border-collapse:collapse;font-size:12.5px;margin:14px 0}
+.dtable th{background:#1a1a1a;color:#fff;padding:9px 13px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+.dtable td{padding:9px 13px;border-bottom:1px solid #e5e7eb;color:#444;vertical-align:top}
+.dtable tr:nth-child(even) td{background:#fafafa}
+.dtable td strong{color:#1a1a1a}
+
+/* Tier cards */
+.tier-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:14px 0}
+.tier-card{border-radius:8px;padding:14px}
+.tier-card.t1{background:#fff4dc;border:1px solid #f0d080}
+.tier-card.t2{background:#e8f4e8;border:1px solid #90c890}
+.tier-card.t3{background:#eef2ff;border:1px solid #a0b0e8}
+.tlabel{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.tier-card.t1 .tlabel{color:#b87b00}
+.tier-card.t2 .tlabel{color:#2d6a2d}
+.tier-card.t3 .tlabel{color:#3d5ab0}
+.tier-card h4{font-size:13px;font-weight:700;color:#1a1a1a;margin-bottom:4px}
+.tier-card p{font-size:11.5px;color:#555;line-height:1.5}
+
+/* Steps */
+.steps{display:flex;flex-direction:column;gap:0;margin:14px 0}
+.step{display:flex;gap:14px;position:relative;padding-bottom:18px}
+.step:last-child{padding-bottom:0}
+.step:not(:last-child)::before{content:'';position:absolute;left:14px;top:32px;bottom:0;width:2px;background:#e5e7eb}
+.step-n{width:28px;height:28px;border-radius:50%;background:#e8a020;color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;z-index:1}
+.step-b{padding-top:3px;flex:1}
+.step-b h4{font-size:13.5px;font-weight:700;color:#1a1a1a;margin-bottom:3px}
+.step-b p{font-size:13px;color:#555;line-height:1.6}
+
+/* Objections */
+.obj-card{border:1px solid #e5e7eb;border-radius:10px;margin-bottom:12px;overflow:hidden}
+.obj-head{padding:13px 16px;background:#fff;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+.obj-head h4{font-size:13.5px;font-weight:700;color:#1a1a1a}
+.obj-head span{font-size:11px;color:#aaa}
+.obj-body{padding:0 16px;max-height:0;overflow:hidden;transition:max-height .3s ease,padding .3s ease;background:#fafafa;border-top:1px solid #e5e7eb}
+.obj-body.open{max-height:500px;padding:14px 16px}
+.obj-why{font-size:12.5px;color:#888;margin-bottom:8px;font-style:italic}
+.obj-rlabel{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#e8a020;margin-bottom:5px}
+
+/* Follow-up sequence */
+.seq{display:flex;gap:0;overflow-x:auto;margin:14px 0;padding-bottom:4px}
+.seq-step{min-width:145px;background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:14px;margin-right:10px;flex-shrink:0}
+.seq-day{font-size:10px;font-weight:700;text-transform:uppercase;color:#e8a020;margin-bottom:4px}
+.seq-method{font-size:12px;font-weight:700;color:#1a1a1a;margin-bottom:4px}
+.seq-step p{font-size:11.5px;color:#666;line-height:1.4}
+
+/* Quiz */
+#quiz-wrap{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:28px;margin-top:36px}
+.quiz-head h2{font-size:18px;font-weight:700;margin-bottom:4px}
+.quiz-head p{font-size:12px;color:#888;margin-bottom:18px}
+.q-dots{display:flex;gap:5px;margin-bottom:18px}
+.q-dot{width:8px;height:8px;border-radius:50%;background:#e5e7eb}
+.q-dot.ans{background:#e8a020}.q-dot.ok{background:#4caf50}.q-dot.bad{background:#f44336}
+.q-num{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:6px}
+.q-text{font-size:15px;font-weight:600;color:#1a1a1a;margin-bottom:18px;line-height:1.5}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{padding:12px 16px;border:2px solid #e5e7eb;border-radius:9px;cursor:pointer;font-size:13.5px;color:#333;transition:border-color .15s,background .15s;display:flex;align-items:center;gap:10px}
+.opt:hover{border-color:#e8a020;background:#fffbf0}
+.opt.sel{border-color:#e8a020;background:#fffbf0}
+.opt.ok{border-color:#4caf50;background:#f0faf0;color:#1a4a1a}
+.opt.bad{border-color:#f44336;background:#fff5f5;color:#4a1a1a}
+.opt.show-ok{border-color:#4caf50;background:#f0faf0}
+.opt-ltr{width:26px;height:26px;border-radius:50%;background:#f0f0f0;color:#666;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.opt.ok .opt-ltr{background:#4caf50;color:#fff}
+.opt.bad .opt-ltr{background:#f44336;color:#fff}
+.opt.show-ok .opt-ltr{background:#4caf50;color:#fff}
+.explain{margin-top:12px;padding:12px 14px;border-radius:7px;font-size:12.5px;line-height:1.6;display:none}
+.explain.ok-exp{background:#f0faf0;border:1px solid #90c890;color:#1a4a1a;display:block}
+.explain.bad-exp{background:#fff5f5;border:1px solid #f0a0a0;color:#4a1a1a;display:block}
+.quiz-nav{display:flex;justify-content:space-between;align-items:center;margin-top:20px}
+.quiz-nav .qctr{font-size:12px;color:#888}
+
+/* Result */
+.result{text-align:center;padding:16px 0}
+.result .score{font-size:56px;font-weight:700;color:#e8a020;line-height:1}
+.result .rlabel{font-size:13px;color:#888;margin:6px 0 16px}
+.result .pass-msg{font-size:18px;font-weight:700;color:#2d6a2d;margin-bottom:6px}
+.result .fail-msg{font-size:18px;font-weight:700;color:#c0392b;margin-bottom:6px}
+.result-stats{display:flex;justify-content:center;gap:24px;margin:16px 0}
+.rs-n{font-size:24px;font-weight:700}
+.rs-n.ok{color:#4caf50}.rs-n.bad{color:#f44336}
+.rs-l{font-size:11px;color:#888;margin-top:2px}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 22px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s}
+.btn-primary{background:#e8a020;color:#1a1a1a}.btn-primary:hover{background:#d09010}
+.btn-secondary{background:#f4f5f7;color:#555;border:1px solid #e5e7eb}.btn-secondary:hover{background:#e8eaed}
+.btn-dark{background:#1a1a1a;color:#fff}.btn-dark:hover{background:#2a2a2a}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* Nav footer */
+.mod-nav{display:flex;justify-content:space-between;margin-top:36px;padding-top:20px;border-top:1px solid #e5e7eb}
+
+/* Complete banner */
+.complete-banner{background:linear-gradient(135deg,#1a4a1a,#2d6a2d);color:#fff;border-radius:14px;padding:36px;text-align:center;margin-bottom:28px}
+.complete-banner .trophy{font-size:44px;margin-bottom:14px}
+.complete-banner h2{font-size:22px;font-weight:700;margin-bottom:6px}
+.complete-banner p{font-size:14px;color:#90d090;line-height:1.6}
+
+/* Loading / Error */
+#loading,#error-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;gap:16px;background:#f4f5f7}
+#loading .spinner{width:40px;height:40px;border:4px solid #e5e7eb;border-top-color:#e8a020;border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#loading p{font-size:14px;color:#888}
+#error-screen .err-card{background:#fff;border-radius:12px;padding:40px;text-align:center;border:1px solid #e5e7eb;max-width:400px}
+#error-screen h2{font-size:18px;font-weight:700;color:#c0392b;margin-bottom:8px}
+#error-screen p{font-size:13px;color:#777;line-height:1.6}
+</style>
+</head>
+<body>
+
+<div id="loading"><div class="spinner"></div><p>Loading your training…</p></div>
+<div id="error-screen" style="display:none">
+  <div class="err-card">
+    <div style="font-size:36px;margin-bottom:12px">⚠️</div>
+    <h2 id="err-title">Link Not Found</h2>
+    <p id="err-msg">This training link is invalid or has expired. Please contact your manager to get a new link.</p>
+  </div>
+</div>
+
+<div id="app" style="display:none">
+  <nav id="sidebar">
+    <div class="sb-brand">
+      <div class="logo">fatty<span>chem</span>®</div>
+      <div class="tagline">Training & Development</div>
+    </div>
+    <div class="sb-user"><strong id="sb-name">–</strong><span id="sb-course">–</span></div>
+    <div class="sb-course-title">Course Modules</div>
+    <div class="sb-progress-wrap">
+      <div class="sb-progress-label"><span>Progress</span><span id="sb-pct">0%</span></div>
+      <div class="prog-bar"><div class="prog-fill" id="sb-prog-fill" style="width:0%"></div></div>
+    </div>
+    <div class="sb-modules" id="sb-modules"></div>
+    <div class="sb-footer">fattychem.com · Los Fresnos, TX</div>
+  </nav>
+
+  <main id="main">
+    <div id="topbar">
+      <div class="tb-crumb" id="tb-crumb">Training</div>
+      <div class="tb-right">
+        <span id="tb-status-badge" style="background:#fff4dc;color:#b87b00;border:1px solid #f0d080;font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600"></span>
+      </div>
+    </div>
+    <div id="content">
+      <div id="module-content"></div>
+    </div>
+  </main>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+//  COURSE DATA
+//  Each course has modules. Each module has html content + quiz.
+// ═══════════════════════════════════════════════════════════════
+const COURSES = {
+
+// ─────────────────────────────────────────────
+'houston-sales': {
+  id: 'houston-sales',
+  title: 'Houston Sales Representative Training',
+  modules: [
+    {
+      title: 'Product & Pricing Knowledge',
+      sub: 'Containers · Yield · Pricing · ISCC',
+      content: `
+<div class="mod-header">
+  <div class="mod-num-label">Module 1 of 4</div>
+  <div class="mod-title">Product & Pricing Knowledge</div>
+  <div class="mod-desc">Before you can sell, you need to know your product cold. This module covers what we install, how yield affects payment, how pricing works, and why ISCC certification is a competitive edge.</div>
+</div>
+<div class="section">
+  <h2>Container Types</h2>
+  <p>Fatty Chem installs and maintains the collection container at every customer location — at no cost to them. Two main options:</p>
+  <h3>Indoor Tanks (Fryer-Connected)</h3>
+  <p>Installed inside the kitchen, often connected directly to the fryer drain. Oil goes straight from fryer to tank — minimal water, debris, or contamination. These accounts typically yield <strong>90–95%</strong>. Common in fast food chains and high-volume operations with the right kitchen layout.</p>
+  <h3>Outdoor Containers</h3>
+  <p>Placed outside, staff pour oil in manually. More exposed to rain, debris, and misuse. Typical yield: <strong>70–75%</strong>. The most common setup, especially for smaller and mid-size restaurants.</p>
+  <div class="info-box"><p><strong>Pitch opportunity:</strong> If a prospect has an outdoor container, an indoor tank upgrade means cleaner oil, higher yield, and a better payment rate for them. It's a compelling upgrade story that competitors rarely offer.</p></div>
+</div>
+<div class="section">
+  <h2>Understanding Yield</h2>
+  <p>Yield is the percentage of collected oil that is usable after processing. The rest — water, food solids, debris — is waste we process and dispose of at our cost. We only pay customers on usable yield.</p>
+  <table class="dtable">
+    <tr><th>Container Type</th><th>Typical Yield</th><th>Why</th></tr>
+    <tr><td><strong>Indoor (fryer-connected)</strong></td><td>90–95%</td><td>Sealed system, minimal contamination</td></tr>
+    <tr><td><strong>Outdoor container</strong></td><td>70–75%</td><td>Rain, debris, manual pouring</td></tr>
+    <tr><td><strong>Average all accounts</strong></td><td>~75%</td><td>Working assumption for planning</td></tr>
+  </table>
+  <div class="callout"><div class="clabel">When a customer asks about payment calculation</div><p>"We pay on usable oil only — not gross collected. <strong>Yield is why.</strong> About 25% of what we collect is water and waste we have to process on our end. Your payment reflects only the clean, usable portion."</p></div>
+</div>
+<div class="section">
+  <h2>How Pricing Works</h2>
+  <p>UCO is a commodity — price per pound fluctuates with energy and feedstock markets. We pay customers a percentage of the current market price, calculated on their net usable yield.</p>
+  <p>In 2025, market price averaged ~$0.44/lb. Customers received $0.10–$0.18/lb. In 2026, prices have risen — customers in our territory are now receiving <strong>more than $0.20/lb</strong>.</p>
+  <table class="dtable">
+    <tr><th>Account Type</th><th>Typical Rate</th><th>Example Volume</th></tr>
+    <tr><td><strong>Standard (most accounts)</strong></td><td>~15% of market</td><td>500–2,000 lbs/month</td></tr>
+    <tr><td><strong>Large volume</strong></td><td>Up to 40% of market</td><td>5,000+ lbs/month</td></tr>
+  </table>
+  <div class="info-box"><p><strong>Never quote a specific rate in the field without checking with management first.</strong> The rate depends on volume, yield, and location — information you typically need to gather in discovery first.</p></div>
+</div>
+<div class="section">
+  <h2>ISCC Certification — Your Competitive Edge</h2>
+  <p>ISCC = International Sustainability & Carbon Certification. A global standard for traceable, sustainable biomass supply chains. Fatty Chem is one of the few UCO collectors in Texas with full certification.</p>
+  <ul>
+    <li>ISCC-certified UCO sells for a <strong>higher price</strong> to buyers — premium flows directly to our margins.</li>
+    <li>Large corporate customers increasingly require certified supply chains for sustainability reporting.</li>
+    <li>Most Houston competitors are <strong>not ISCC certified</strong> — it's a real differentiator in enterprise conversations.</li>
+  </ul>
+  <div class="callout"><div class="clabel">How to use it in conversation</div><p>"One thing that sets us apart — we're ISCC certified, one of the few collectors in Texas with that credential. <strong>If your operation has any sustainability reporting requirements, our certification means your oil enters a fully traceable, verified supply chain.</strong> Most of our competitors can't say that."</p></div>
+</div>`,
+      quiz: [
+        { q:"What is the typical yield for an outdoor UCO container?", opts:["90–95%","80–85%","70–75%","60–65%"], ans:2, exp:"Outdoor containers yield 70–75% due to rain, debris, and manual pouring. Indoor fryer-connected tanks achieve 90–95%." },
+        { q:"Most standard accounts receive approximately what percentage of the UCO market price?", opts:["40%","25%","15%","5%"], ans:2, exp:"The vast majority of accounts are near 15%. Only large high-volume customers earn toward the 40% range." },
+        { q:"What does ISCC stand for?", opts:["International Standards for Carbon Compliance","International Sustainability & Carbon Certification","Independent Supply Chain Certification","Industrial Sustainability Certification Council"], ans:1, exp:"ISCC = International Sustainability & Carbon Certification — a global standard for traceable, sustainable biomass supply chains." },
+        { q:"A customer asks why they don't get paid on the full amount of oil they pour in. What is the correct explanation?", opts:["We deduct a service fee","Market prices dropped recently","We pay only on usable yield — water and waste are not usable, and we absorb that processing cost","Our containers lose some oil in transport"], ans:2, exp:"Yield is the answer. We only get paid for usable oil and absorb the cost of waste. Customer payment reflects only the clean, usable portion." },
+        { q:"When should you quote a specific payment rate to a new prospect in the field?", opts:["After the discovery meeting","As soon as they ask","Never — confirm with management first before committing to any rate","Only if they have a written competitor offer"], ans:2, exp:"Never commit to pricing without checking with management. Rate depends on volume, yield, and location — factors you can't fully assess on a first visit." }
+      ]
+    },
+    {
+      title: 'The Sales Process',
+      sub: 'Prospect → Discovery → Close → Handoff',
+      content: `
+<div class="mod-header">
+  <div class="mod-num-label">Module 2 of 4</div>
+  <div class="mod-title">The Sales Process</div>
+  <div class="mod-desc">A repeatable, step-by-step process for moving a prospect from first contact to a signed account. Every successful deal follows this flow.</div>
+</div>
+<div class="section">
+  <h2>Customer Tiers</h2>
+  <p>Prioritize by tier. Spend your time on the highest-value opportunities first — don't spend your early months chasing individual restaurants when food processors and supermarket chains are available.</p>
+  <div class="tier-grid">
+    <div class="tier-card t1"><div class="tlabel">🥇 Tier 1 — Priority</div><h4>Food Processors & Chains</h4><p>Food manufacturers, supermarket chains with hot food, multi-unit chains via corporate. 5,000+ lbs/month.</p></div>
+    <div class="tier-card t2"><div class="tlabel">🥈 Tier 2 — Medium</div><h4>Mid-Size Operations</h4><p>Regional chains, hotels, school districts, institutional cafeterias. 1,000–5,000 lbs/month.</p></div>
+    <div class="tier-card t3"><div class="tlabel">🥉 Tier 3 — Fill Route</div><h4>Individual Restaurants</h4><p>Any single-location restaurant. Lower volume individually — build route density around Tier 1 anchors.</p></div>
+  </div>
+</div>
+<div class="section">
+  <h2>The 6-Step Sales Process</h2>
+  <div class="steps">
+    <div class="step"><div class="step-n">1</div><div class="step-b"><h4>Research & Build Your List</h4><p>Use LinkedIn, Google Maps, industry directories, and the Texas Restaurant Association member list. Know the company, estimate their volume, and identify the right contact (Operations Manager, Facilities Director, or Procurement Manager) before your first outreach. Log everything in CRM before calling.</p></div></div>
+    <div class="step"><div class="step-n">2</div><div class="step-b"><h4>First Contact — Get the Meeting</h4><p>Your only goal: earn a 15-minute meeting. Do not pitch the full product. Do not quote. Introduce yourself, mention Fatty Chem's 20+ years in Texas and ISCC certification, and ask for time. Use cold calls, walk-ins to the back entrance, or email outreach.</p></div></div>
+    <div class="step"><div class="step-n">3</div><div class="step-b"><h4>Discovery Meeting — Listen First</h4><p>Ask: How much oil per week? Current provider? Happy with service? Contract expiration? What does ideal service look like? Take notes — the answers build your proposal. Always ask who else is involved in the decision before you leave.</p></div></div>
+    <div class="step"><div class="step-n">4</div><div class="step-b"><h4>Proposal — Customize and Present in Person</h4><p>Based on discovery: right container type, collection frequency, payment estimate. Confirm all numbers with management before presenting. Proposals sent cold without a meeting get ignored — always present face to face when possible.</p></div></div>
+    <div class="step"><div class="step-n">5</div><div class="step-b"><h4>Follow-Up & Close</h4><p>Most deals need 5–8 touchpoints. Follow up same day with a thank-you email, then every 3–5 days. "I'll think about it" is not a no — probe for the real concern, identify the decision-maker, and leave with a specific next step (a date, not "I'll call you").</p></div></div>
+    <div class="step"><div class="step-n">6</div><div class="step-b"><h4>Handoff to Operations</h4><p>Contract signed → immediately introduce the customer to <strong>Hector Martinez</strong> (Account Manager) and <strong>Frank Barcenas</strong> (Routes). Send a warm intro email on day one. A smooth handoff is part of your job — customers who feel dropped after signing don't stay.</p></div></div>
+  </div>
+</div>
+<div class="section">
+  <h2>Discovery Questions to Always Ask</h2>
+  <table class="dtable">
+    <tr><th>Question</th><th>Why It Matters</th></tr>
+    <tr><td>"How much oil do you go through per week?"</td><td>Determines tier and pricing range</td></tr>
+    <tr><td>"What are you doing with it currently?"</td><td>Reveals competitor, DIY disposal, or compliance risk</td></tr>
+    <tr><td>"Are you happy with your current provider?"</td><td>Opens pain point discussion even if under contract</td></tr>
+    <tr><td>"When does your contract expire?"</td><td>Sets your follow-up trigger — call 60 days before</td></tr>
+    <tr><td>"What would ideal service look like?"</td><td>Customer tells you exactly what to put in the proposal</td></tr>
+    <tr><td>"Who else is involved in this decision?"</td><td>Surfaces the real decision-maker before you lose the deal to a gatekeeper</td></tr>
+  </table>
+  <div class="info-box"><p><strong>CRM Rule:</strong> Log every call, meeting, email, and voicemail the same day it happens. If it's not in the CRM, it didn't happen. Every prospect record needs: contact name, title, phone, email, estimated monthly volume, current provider, contract expiration date, and last interaction outcome.</p></div>
+</div>`,
+      quiz: [
+        { q:"What is the ONLY goal on a first contact with a prospect?", opts:["Explain pricing","Get a signed contract","Get a meeting — not to close, not to quote","Leave a brochure and move on"], ans:2, exp:"Your only goal on first contact is to earn a meeting. Pitching or quoting too early loses deals." },
+        { q:"A Tier 1 anchor account typically generates how much UCO per month?", opts:["100–500 lbs","500–2,000 lbs","2,000–4,000 lbs","5,000+ lbs"], ans:3, exp:"Tier 1 anchor accounts generate 5,000+ lbs/month. These are the accounts that justify a dedicated Houston route." },
+        { q:"You finish a discovery meeting. What is the most important thing to get before leaving?", opts:["A verbal commitment to switch","The contract expiration date if they have a provider, and a specific next step","A referral to another business","Their annual oil volume in writing"], ans:1, exp:"Always leave with the contract expiration date (if applicable) and a specific next step — a date, a follow-up call, or a second meeting. Then log in CRM same day." },
+        { q:"Once a contract is signed, who should you immediately introduce the customer to?", opts:["Andres Perez to review terms","Hector Martinez (Account Manager) and Frank Barcenas (Routes)","The billing team for invoicing setup","No one — your job ends at signing"], ans:1, exp:"Hector manages the ongoing account relationship; Frank handles routes and pickups. A warm intro on day one protects the customer relationship you worked to build." },
+        { q:"A prospect says 'I'll think about it and get back to you.' What is the right response?", opts:["Say 'sounds good' and wait","Drop the price to push faster","Probe for the specific concern, then agree on a concrete next step with a date","Send a follow-up email in two weeks"], ans:2, exp:"'I'll think about it' usually means unconvinced or needs to check with someone else. Find the real concern, identify the decision-maker, and leave with a specific follow-up date — not an open-ended promise." }
+      ]
+    },
+    {
+      title: 'Objection Handling',
+      sub: '6 most common objections with responses',
+      content: `
+<div class="mod-header">
+  <div class="mod-num-label">Module 3 of 4</div>
+  <div class="mod-title">Objection Handling</div>
+  <div class="mod-desc">Every salesperson hears objections. Great reps know exactly how to respond. Here are the 6 you'll hear most often in Houston.</div>
+</div>
+<div class="section">
+  <h2>The 6 Most Common Objections</h2>
+</div>
+<div class="obj-card"><div class="obj-head" onclick="this.nextElementSibling.classList.toggle('open')"><h4>"We already have a provider."</h4><span>Most common ↓</span></div>
+<div class="obj-body open"><p class="obj-why">Most Houston accounts already have a collector. This is not a dead end — it's the start of the conversation.</p><div class="obj-rlabel">How to respond</div>
+<div class="script-box"><div class="script-label">Your response</div><p>"That's great — a lot of our best customers came to us the same way. Can I ask how long you've been with them, and are you generally happy with the service? Specifically around pickup reliability and payments?"</p></div>
+<p style="font-size:13px;color:#555;margin-top:10px;line-height:1.6">Let them talk. Pain points come out — missed pickups, late payments, no one to call. Then: "That's exactly the kind of thing we've built our reputation on. Would you be open to a quick comparison when your contract is up?" Always get the expiration date and set a 60-day-out follow-up.</p></div></div>
+
+<div class="obj-card"><div class="obj-head" onclick="this.nextElementSibling.classList.toggle('open')"><h4>"We're under contract."</h4><span>Timing issue ↓</span></div>
+<div class="obj-body"><p class="obj-why">A contract means not right now — not never. Your job is to stay warm until it expires.</p><div class="obj-rlabel">How to respond</div>
+<div class="script-box"><div class="script-label">Your response</div><p>"Totally understand. When does your contract come up? I'd love to have a conversation before you auto-renew — most of our customers tell us they wish they'd made the switch sooner."</p></div>
+<p style="font-size:13px;color:#555;margin-top:10px;line-height:1.6">Get the expiration date. Log it. Set a follow-up 60 days before. If there have been service issues, let them know those could be grounds to exit the contract early — worth exploring with their current provider.</p></div></div>
+
+<div class="obj-card"><div class="obj-head" onclick="this.nextElementSibling.classList.toggle('open')"><h4>"Your price is too low" / "Our current guy pays more."</h4><span>Pricing objection ↓</span></div>
+<div class="obj-body"><p class="obj-why">Sometimes genuine, sometimes a test. Never chase price down without understanding the full picture first.</p><div class="obj-rlabel">How to respond</div>
+<div class="script-box"><div class="script-label">Your response</div><p>"I'd like to understand their offer better — is that per pound of oil you put in, or per pound of usable oil after processing? The yield calculation makes a big difference. What we quote is based on clean usable oil, and our yield numbers are among the best."</p></div>
+<p style="font-size:13px;color:#555;margin-top:10px;line-height:1.6">Comparisons are often apples to oranges. A competitor quoting 20¢ gross on a 70% yield account pays ~14¢ net. Fatty Chem's 18¢ on a 90% yield indoor tank pays ~16.2¢ net. Walk through the math. If they still have a genuinely better offer, do not match it in the field — check with management and call back same day.</p></div></div>
+
+<div class="obj-card"><div class="obj-head" onclick="this.nextElementSibling.classList.toggle('open')"><h4>"We don't produce much oil — not worth it."</h4><span>Volume concern ↓</span></div>
+<div class="obj-body"><p class="obj-why">Customers often underestimate their volume. And even small accounts matter for route density.</p><div class="obj-rlabel">How to respond</div>
+<div class="script-box"><div class="script-label">Your response</div><p>"You'd be surprised — most kitchens produce more than they think. There's no minimum to get started with us, and even if you're a smaller account, we build our Houston routes to make every stop work. What's the main thing you're looking for — payment, or just getting rid of the hassle?"</p></div>
+<p style="font-size:13px;color:#555;margin-top:10px;line-height:1.6">For genuinely small accounts, shift the pitch from revenue to compliance and convenience — proper disposal, clean kitchen, zero operational headache.</p></div></div>
+
+<div class="obj-card"><div class="obj-head" onclick="this.nextElementSibling.classList.toggle('open')"><h4>"I need to think about it."</h4><span>Stall ↓</span></div>
+<div class="obj-body"><p class="obj-why">Usually means: not convinced yet, or needs to check with someone. Probe before you leave.</p><div class="obj-rlabel">How to respond</div>
+<div class="script-box"><div class="script-label">Your response</div><p>"Of course — I want you to be completely comfortable. Is there a specific concern I can help address before you decide? I want to make sure you have everything you need to make a confident call."</p></div>
+<p style="font-size:13px;color:#555;margin-top:10px;line-height:1.6">If they can't articulate a concern, ask: "Is there someone else who needs to be part of this decision?" Always leave with a specific next step — a date on the calendar, not "I'll call you sometime."</p></div></div>
+
+<div class="obj-card"><div class="obj-head" onclick="this.nextElementSibling.classList.toggle('open')"><h4>"What happens if you miss a pickup?"</h4><span>Reliability concern ↓</span></div>
+<div class="obj-body"><p class="obj-why">They've been burned by an unreliable collector. This is actually a good sign — they care enough to ask.</p><div class="obj-rlabel">How to respond</div>
+<div class="script-box"><div class="script-label">Your response</div><p>"That's a fair question — and exactly why customers choose us. We've been operating in Texas for over 20 years and our routes run on schedule. If something ever changes, you hear from us before your container overflows. You'll have Frank's direct number — not a 1-800 number."</p></div>
+<p style="font-size:13px;color:#555;margin-top:10px;line-height:1.6">Reliability is Fatty Chem's strongest card against national competitors. Lean hard on the family-owned, personal service angle. Offer references from existing customers if they ask.</p></div></div>`,
+      quiz: [
+        { q:"A prospect says 'We already have a provider.' What is the best first response?", opts:["Thank them and leave","Ask how long they've been with their provider and whether they're happy with reliability and payments","Immediately offer a lower price","Ask to speak to their general manager"], ans:1, exp:"Most accounts have a provider. Find the pain points by asking about service quality. Let them talk — their frustrations with the current provider are your opportunity." },
+        { q:"A prospect says their current provider pays more per pound. Before adjusting your offer, what should you do?", opts:["Match the price immediately","Ask whether that rate is on gross collected oil or net usable yield — the math often changes the comparison","Tell them the competitor is cutting corners","End the call and report to management"], ans:1, exp:"Pricing comparisons are often apples to oranges. A competitor's higher gross rate on low yield may actually pay less net than Fatty Chem's rate. Do the yield math before adjusting anything — and never negotiate price in the field without approval." },
+        { q:"A prospect is under contract. What is the most important piece of information to get?", opts:["Annual oil volume estimate","Contract expiration date","Name of their current provider","A referral to another business"], ans:1, exp:"The contract expiration date is the key. Log it and set a follow-up 60 days before — that's when accounts are most open to switching." },
+        { q:"For the 'What happens if you miss a pickup?' objection, what is Fatty Chem's best response?", opts:["Offer a financial penalty clause","Emphasize 20+ years of operations, on-schedule routes, and the customer gets Frank's direct number — not a call center","Guarantee same-day replacement service","Point out that all collectors have occasional misses"], ans:1, exp:"Reliability is your strongest card against nationals. Emphasize 20+ years of experience, on-schedule routes, and direct personal contact — not a call center or automated system." },
+        { q:"A prospect says 'We don't produce much oil.' How should you respond?", opts:["Tell them there's a minimum volume requirement","Agree it's probably not worth pursuing","Explain there's no minimum, and for smaller accounts shift the pitch to convenience and compliance rather than payment","Offer to pick up for free until volume increases"], ans:2, exp:"No minimum. For small accounts, pivot to compliance and convenience — proper disposal, clean kitchen, zero hassle. Small accounts also build route density, which has operational value." }
+      ]
+    },
+    {
+      title: 'Houston Outreach Playbook',
+      sub: 'Targeting · Scripts · Follow-up sequence',
+      content: `
+<div class="mod-header">
+  <div class="mod-num-label">Module 4 of 4</div>
+  <div class="mod-title">Houston Outreach Playbook</div>
+  <div class="mod-desc">Specific tactics for Houston — where to find prospects, what to say, and the follow-up sequence that turns first contacts into meetings.</div>
+</div>
+<div class="section">
+  <h2>Where to Find Tier 1 Prospects in Houston</h2>
+  <table class="dtable">
+    <tr><th>Source</th><th>What to Find</th><th>How</th></tr>
+    <tr><td><strong>LinkedIn</strong></td><td>Operations/Procurement managers at chains</td><td>Search "Operations Manager" + Houston + food/restaurant companies</td></tr>
+    <tr><td><strong>Google Maps</strong></td><td>Supermarket chains, food halls, restaurant strips</td><td>Search chains by name — look at total location count, not just one</td></tr>
+    <tr><td><strong>Houston Business Journal</strong></td><td>Food manufacturers, large food processors</td><td>Business listings often include food sector companies by headcount</td></tr>
+    <tr><td><strong>Walk-in scouting</strong></td><td>Restaurant clusters, commercial kitchen corridors</td><td>Drive Westheimer, Bellaire, Katy Freeway, Greenway Plaza areas</td></tr>
+    <tr><td><strong>TX Restaurant Assoc.</strong></td><td>Member directory of Houston operators</td><td>Member directories include contact info — a goldmine for outreach</td></tr>
+  </table>
+  <div class="info-box"><p><strong>Build your prospect list before making any calls.</strong> Log every prospect in CRM with company name, address, estimated size, who to ask for, and likely current provider situation — before you dial.</p></div>
+</div>
+<div class="section">
+  <h2>Cold Call Script</h2>
+  <div class="script-box"><div class="script-label">Opening (first 15 seconds)</div><p>"Hi, this is [Your Name] with Fatty Chem By Products — we're a Texas-based used cooking oil collection company, been operating for over 20 years. I'm reaching out because we're expanding into Houston and I wanted to connect about your used cooking oil setup. Am I speaking with [Name], or is there someone better to talk to about that?"</p></div>
+  <div class="script-box"><div class="script-label">If they have a provider</div><p>"Completely understand. Can I ask — are you generally happy with the service? Specifically around pickup reliability and payment timing? [Listen.] The reason I ask is that's exactly where we've added value for a lot of operations that switched to us. Would you be open to a 15-minute conversation just to see if there's a fit when your current arrangement is up?"</p></div>
+  <div class="script-box"><div class="script-label">If they ask 'How much do you pay?'</div><p>"It depends on your volume and oil type — we customize the rate per account. Current prices are strong right now; customers in our existing territory are getting over $0.20 per pound. I'd need to understand your setup a bit better to give you an accurate number — exactly what I'd like to cover in a quick call."</p></div>
+</div>
+<div class="section">
+  <h2>Walk-In Approach</h2>
+  <p>Always go to the <strong>back door / service entrance</strong> — never the front. Kitchen managers are at the back. Going in the front signals you don't understand their operation.</p>
+  <div class="steps">
+    <div class="step"><div class="step-n">→</div><div class="step-b"><h4>Back entrance only</h4><p>Ask for the manager on duty. Introduce yourself as a local business development rep — not a salesperson.</p></div></div>
+    <div class="step"><div class="step-n">→</div><div class="step-b"><h4>Open with a question</h4><p>"Hi, I'm [Name] with Fatty Chem — we handle used cooking oil collection. Could I ask what you're currently doing with yours?"</p></div></div>
+    <div class="step"><div class="step-n">→</div><div class="step-b"><h4>Leave materials</h4><p>Always carry Fatty Chem one-pagers. If the decision-maker isn't available, leave materials and get their name for a phone or email follow-up.</p></div></div>
+  </div>
+</div>
+<div class="section">
+  <h2>Email Template — Initial Outreach</h2>
+  <div class="script-box"><div class="script-label">Subject line</div><p>Used cooking oil collection — Houston expansion | Fatty Chem</p></div>
+  <div class="script-box"><div class="script-label">Body</div>
+  <p>Hi [First Name],</p>
+  <p>My name is [Your Name] — I'm with Fatty Chem By Products, a Texas-based UCO collection company operating across South and Central Texas for over 20 years.</p>
+  <p>We're expanding into Houston and I wanted to reach out directly. We work with restaurants, food processors, and supermarket chains — scheduled pickups, container installation, and competitive market-rate payments for your oil. We're also ISCC certified, which matters if your operation has sustainability reporting requirements.</p>
+  <p>Would you be open to a quick 15-minute call? I'm flexible this week and next.</p>
+  <p>— [Your Name] | [Phone] | Fatty Chem By Products | www.fatty-chem.com</p></div>
+</div>
+<div class="section">
+  <h2>Follow-Up Sequence</h2>
+  <p>Most deals need 5–8 touchpoints. Use this sequence after first contact:</p>
+  <div class="seq">
+    <div class="seq-step"><div class="seq-day">Same Day</div><div class="seq-method">📧 Thank You</div><p>"Great connecting — attached is our one-pager. Looking forward to [next step]."</p></div>
+    <div class="seq-step"><div class="seq-day">Day 3</div><div class="seq-method">📞 Follow-up Call</div><p>Reference the first conversation. Confirm next step or reschedule.</p></div>
+    <div class="seq-step"><div class="seq-day">Day 7</div><div class="seq-method">📧 Value Email</div><p>Share something useful — current UCO pricing, ISCC note, or a brief customer story.</p></div>
+    <div class="seq-step"><div class="seq-day">Day 14</div><div class="seq-method">📞 Check-In</div><p>"Just following up — any questions? I'd love to get a time on the calendar."</p></div>
+    <div class="seq-step"><div class="seq-day">Day 30</div><div class="seq-method">📧 Break-Up</div><p>"I don't want to keep bothering you — if timing isn't right just let me know and I'll circle back."</p></div>
+    <div class="seq-step"><div class="seq-day">Contract −60</div><div class="seq-method">📞 Reactivate</div><p>If you have their expiration date, call 60 days before with a fresh proposal.</p></div>
+  </div>
+</div>
+<div class="callout"><div class="clabel">Your 2026 Houston Mission</div><p><strong>2 signed anchor accounts by end of Q3.</strong> An anchor account generates 5,000+ lbs/month. These justify the route. Every smaller account you sign builds density around those anchors. You're planting the flag — volume growth comes in 2027 and beyond.</p></div>`,
+      quiz: [
+        { q:"What is the 2026 Houston primary milestone?", opts:["Reach out to 100 prospects by Q4","Build a 30-stop weekly route","Sign 2 anchor accounts by end of Q3","Get 50 individual restaurant accounts"], ans:2, exp:"The 2026 goal is 2 signed anchor accounts by Q3. These high-volume accounts (5,000+ lbs/month) justify the Houston route and set up 2027 growth." },
+        { q:"On a restaurant walk-in, where should you go?", opts:["Front door — ask the host","Call ahead, then use the front entrance","Back entrance / service door — kitchen managers are there","Check their website for the owner's contact first"], ans:2, exp:"Always approach a kitchen at the back entrance. Kitchen managers and operations staff are at the back — going in the front signals you don't understand how their operation works." },
+        { q:"In the follow-up sequence, when should you send a 'break-up email'?", opts:["Day 3 if no response to first call","Day 7 after first meeting","Around Day 30 after several unanswered touchpoints","Never — keep following up indefinitely"], ans:2, exp:"Around Day 30, after multiple unanswered touchpoints, a break-up email resets the dynamic. It often generates a reply and keeps the door open for better timing." },
+        { q:"A prospect on a cold call asks 'How much do you pay per pound?' What is the right answer?", opts:["Quote the standard 15% rate immediately","Tell them you don't disclose rates on cold calls","Mention prices are currently strong (over $0.20/lb), explain that the exact rate depends on volume and oil type, and redirect to a meeting for an accurate number","Tell them their current provider is probably underpaying them"], ans:2, exp:"Never commit to a rate without understanding volume and yield. Mention strong current prices to create interest, then redirect to the meeting where you can gather the details needed for an accurate, customized quote." },
+        { q:"After sending a first outreach email, when should you follow up if you haven't heard back?", opts:["Wait 2 weeks before any follow-up","Call on Day 3 to reference the email and move the conversation forward","Send an identical email again on Day 7","Only follow up if they open the email"], ans:1, exp:"Day 3 is the right call window. Reference the email, keep it brief, and either confirm a meeting or advance the conversation. Most deals need 5–8 touchpoints — consistent, timely follow-up is what separates won deals from lost ones." }
+      ]
+    }
+  ]
+},
+
+// ─────────────────────────────────────────────
+'route-logistics': {
+  id: 'route-logistics',
+  title: 'Route & Logistics Operations Training',
+  modules: [
+    {
+      title: 'Company, Role & Responsibilities',
+      sub: 'Who we are, what this role owns, and how it fits',
+      content: `
+<div class="mod-header">
+  <div class="mod-num-label">Module 1 of 4</div>
+  <div class="mod-title">Company, Role & Responsibilities</div>
+  <div class="mod-desc">Before running operations, you need to understand what Fatty Chem is, why ISCC certification matters to your day-to-day work, and the full scope of what this role owns.</div>
+</div>
+<div class="section">
+  <h2>About Fatty Chem By Products</h2>
+  <p>Fatty Chem By Products is a family-owned business founded in 2003 and headquartered in Los Fresnos, Texas. Our core business is the collection, processing, and resale of used cooking oil (UCO) sourced from industrial kitchens across South and Central Texas.</p>
+  <p>Our processed UCO is sold exclusively to the renewable energy sector — specifically biodiesel and renewable diesel producers. Every gallon of oil we collect contributes to a cleaner, more sustainable energy supply chain.</p>
+  <p><strong>Current service territory:</strong> Rio Grande Valley (full coverage), McAllen, Brownsville, Laredo, Corpus Christi, Victoria, San Antonio, Austin. Houston is our next major market and is actively being built right now.</p>
+</div>
+<div class="section">
+  <h2>ISCC Certification — What It Is and Why It Matters</h2>
+  <p>Fatty Chem is ISCC-certified. ISCC stands for International Sustainability and Carbon Certification — a globally recognized standard that verifies our entire UCO supply chain meets strict sustainability, traceability, and carbon reduction requirements.</p>
+  <p>Our buyers — renewable diesel and biodiesel producers — increasingly require ISCC-certified feedstock. Without it, we cannot sell to many of the best buyers in the market.</p>
+  <div class="callout"><div class="clabel">ISCC compliance lives in the field</div><p>Accurate volume records, proper documentation, and chain-of-custody integrity all start with the collection team. <strong>The Route &amp; Logistics Leader plays a direct role in protecting our certification every single day.</strong></p></div>
+</div>
+<div class="section">
+  <h2>Role Overview</h2>
+  <p>The Route &amp; Logistics Leader is the command center between management, the driver team, and the sales team — ensuring every route is planned correctly, every driver is supported and accountable, and every customer receives the reliable service Fatty Chem is built on.</p>
+  <p>This role is <strong>office-based and coordination-focused</strong>. It does not require riding routes daily. What it requires is constant, proactive communication — with drivers before and after every route, with Noe on exchanges, with the sales team as new accounts come on, and with Angela to keep management informed.</p>
+  <p><strong>Reports to:</strong> Angela Ayala (angela@fatty-chem.com) &nbsp;|&nbsp; <strong>Direct reports:</strong> UCO Drivers &amp; Noe (Exchanges &amp; Deliveries)</p>
+</div>
+<div class="section">
+  <h2>Core Responsibilities</h2>
+  <table class="dtable">
+    <tr><th>Area</th><th>What You Own</th></tr>
+    <tr><td><strong>Route Planning</strong></td><td>Build and maintain daily/weekly collection schedules. Optimize for stop density, mileage, and time efficiency.</td></tr>
+    <tr><td><strong>Driver Supervision</strong></td><td>Directly manage all UCO drivers. Assign routes, monitor performance, enforce standards, conduct check-ins before and after every route.</td></tr>
+    <tr><td><strong>Route Analysis</strong></td><td>Review volumes per stop, collection frequency, stop profitability. Report findings and recommendations to Angela.</td></tr>
+    <tr><td><strong>Noe / Exchanges</strong></td><td>Coordinate Noe's container exchange schedule. Ensure new containers are installed on time and old ones retrieved.</td></tr>
+    <tr><td><strong>Sales Coordination</strong></td><td>Receive new account handoffs from the sales team. Coordinate installs with Noe. Confirm new stops are running correctly.</td></tr>
+    <tr><td><strong>ISCC &amp; Compliance</strong></td><td>Ensure drivers follow all documentation and chain-of-custody procedures. Enforce safety and DOT procedures. Report compliance concerns immediately.</td></tr>
+    <tr><td><strong>Reporting to Angela</strong></td><td>Provide daily operational updates — route completion, volumes, incidents. Proactively flag anything requiring management attention.</td></tr>
+  </table>
+</div>
+<div class="section">
+  <h2>What Success Looks Like</h2>
+  <ul>
+    <li>Routes are planned efficiently — maximizing volume per stop and minimizing wasted miles</li>
+    <li>Drivers show up every day knowing exactly what is expected of them</li>
+    <li>All scheduled stops are completed — no missed pickups, no surprises</li>
+    <li>New accounts from the sales team are onboarded smoothly onto routes</li>
+    <li>Angela receives daily updates without having to ask for them</li>
+    <li>Problems are reported and resolved quickly — no issues sit unaddressed</li>
+  </ul>
+</div>`,
+      quiz: [
+        { q:"Who does the Route & Logistics Leader report to?", opts:["Andres Perez","Angela Ayala","Frank Barcenas","The UCO Driver team"], ans:1, exp:"The Route & Logistics Leader reports directly to Angela Ayala, who oversees all operations. Day-to-day communication with Andres is expected on strategic matters, but the direct reporting line runs through Angela." },
+        { q:"What does ISCC stand for?", opts:["International Shipping and Collection Certification","Internal Safety and Compliance Committee","International Sustainability and Carbon Certification","Integrated Supply Chain Control"], ans:2, exp:"ISCC = International Sustainability and Carbon Certification. It verifies that our entire UCO supply chain meets strict sustainability, traceability, and carbon reduction requirements — required by most premium renewable fuel buyers." },
+        { q:"The Route & Logistics Leader role is primarily:", opts:["Field-based — riding routes with drivers daily","Office-based and coordination-focused","Sales-oriented — building the Houston account base","Accounting-focused — managing UCO payments to customers"], ans:1, exp:"The role is office-based and coordination-focused. It does not require riding routes daily. The core requirement is constant, proactive communication — with drivers, Noe, the sales team, and Angela." },
+        { q:"When the sales team closes a new customer, what is the Route & Logistics Leader responsible for?", opts:["Calling the customer to negotiate the service rate","Receiving the account details, coordinating with Noe for container installation, adding the stop to the correct driver's route, and confirming the first pickup was completed","Assigning a driver to close the sale and sign the agreement","Updating Andres on the new account and waiting for approval before proceeding"], ans:1, exp:"The Route & Logistics Leader owns the full new account onboarding: receive the handoff from sales, coordinate container install with Noe, add the stop to a route, and confirm the first pickup ran correctly." },
+        { q:"What is Noe's primary responsibility at Fatty Chem?", opts:["Processing UCO at the Los Fresnos facility","Managing the sales team pipeline and follow-ups","Container exchanges, new equipment installations at customer locations, and special deliveries","Bioledger system administration and driver training"], ans:2, exp:"Noe handles container exchanges, new equipment installations at customer locations, and special deliveries. He also responds to emergency collections when unscheduled pickups are needed. The Route & Logistics Leader coordinates his daily schedule." }
+      ]
+    },
+    {
+      title: 'Daily Tasks & Bioledger',
+      sub: 'The 4 non-negotiable daily tasks',
+      content: `
+<div class="mod-header">
+  <div class="mod-num-label">Module 2 of 4</div>
+  <div class="mod-title">Daily Tasks & Bioledger</div>
+  <div class="mod-desc">Four core daily tasks must be completed every operational day without exception. These are the operational heartbeat of the position — and Bioledger is at the center of most of them.</div>
+</div>
+<div class="section">
+  <h2>Task 1 — Input Net Lbs into the Route Analysis Spreadsheet</h2>
+  <p>At the start of each day, enter the previous day's net pounds collected for each route into the Route Analysis spreadsheet. This spreadsheet is the primary tool for tracking performance over time — it feeds management reporting and is used to evaluate routes against targets.</p>
+  <p><strong>How to calculate net lbs:</strong> Take the difference between the Light Weight Ticket and the Heavy Weight Ticket. If a driver covered multiple routes or split stops, log them separately. Accuracy is critical — missing or incorrect entries create blind spots in our data.</p>
+</div>
+<div class="section">
+  <h2>Task 2 — Close Daily Tickets in Bioledger</h2>
+  <p>Every collection from the previous day must be closed as a ticket in Bioledger before end of the current business day. This is required for ISCC compliance. There are two collection types — it is essential to differentiate between them correctly:</p>
+  <table class="dtable">
+    <tr><th>Type</th><th>What It Means</th></tr>
+    <tr><td><strong>EU Collection</strong></td><td>Recorded under EU RED compliance. Used for feedstock going to buyers that require EU sustainability standards.</td></tr>
+    <tr><td><strong>EPA Collection</strong></td><td>Recorded under U.S. EPA standards. Used for feedstock going to domestic buyers under RFS requirements.</td></tr>
+  </table>
+  <p style="margin-top:12px"><strong>Before closing any ticket, verify all four of these fields:</strong></p>
+  <table class="dtable">
+    <tr><th>#</th><th>Field</th><th>Required Value</th></tr>
+    <tr><td>1</td><td>Raw Material</td><td>Must be set to: Used Cooking Oil</td></tr>
+    <tr><td>2</td><td>EU RED Compliance</td><td>Must be set to: Yes</td></tr>
+    <tr><td>3</td><td>Total Default Value</td><td>Must be set to: No</td></tr>
+    <tr><td>4</td><td>Signature on File</td><td>A valid restaurant signature must be present on the account image</td></tr>
+  </table>
+  <div class="callout"><div class="clabel">Critical — Signature Requirement</div><p>Before closing any ticket, verify there is a valid signature from a representative of the restaurant or business (owner, manager, or designated staff). <strong>A signature from the driver is NEVER acceptable.</strong> A driver-signed ticket does not meet ISCC chain-of-custody requirements and must be closed as EPA — not EU. Notify the driver immediately that customer signatures are required every time.</p></div>
+</div>
+<div class="section">
+  <h2>Task 3 — Work Orders: Create, Assign & Follow Up</h2>
+  <p>All work orders are managed through the Fatty Chem WO System at <strong>fatty-chem-wo.netlify.app</strong>. The Driver App (installed on phones) is at <strong>fatty-chem-wo.netlify.app/driver.html</strong>.</p>
+  <table class="dtable">
+    <tr><th>Role</th><th>Access & Responsibility</th></tr>
+    <tr><td><strong>Salesperson</strong></td><td>Creates WOs, submits as PENDING. Can track status of own WOs.</td></tr>
+    <tr><td><strong>Dispatcher</strong></td><td>Reviews all PENDING WOs. Assigns drivers and dates. Can also create WOs directly as SCHEDULED. Monitors all active orders.</td></tr>
+    <tr><td><strong>Driver</strong></td><td>Sees only WOs assigned to them. Updates status in the field: Scheduled → In Progress → Completed. Adds notes, photos, customer signature.</td></tr>
+  </table>
+  <div class="info-box"><p><strong>Work Order Discipline:</strong> An open work order is an open commitment. Review and update open work orders every day — not at the end of the week.</p></div>
+</div>
+<div class="section">
+  <h2>Task 4 — Driver Check-In & Route Monitoring</h2>
+  <p>Throughout the day, actively monitor that every driver is on their route. This is not passive — it requires intentional, consistent communication with each driver every single day.</p>
+  <ul>
+    <li>At the start of the day, verify in Bioledger that each driver has begun their assigned route. If a driver hasn't started within their expected window, contact them immediately.</li>
+    <li>Maintain active communication throughout the day — check in to make sure things are running smoothly. Ask if they need anything: supplies, support, route adjustments, or help with a customer issue.</li>
+    <li>If a driver is falling behind or skipping stops, address it in real time — not at end of day.</li>
+    <li>At end of day, confirm all assignments are accounted for and nothing is left open without a plan.</li>
+  </ul>
+  <div class="callout"><div class="clabel">The standard</div><p><strong>Every driver should hear from the dispatcher at least once during their route.</strong> Not because there is a problem — but because that consistent communication is what keeps problems from happening in the first place.</p></div>
+</div>
+<div class="section">
+  <h2>Bioledger — Start of Day Process</h2>
+  <div class="steps">
+    <div class="step"><div class="step-n">1</div><div class="step-b"><h4>Verify Route Assignments</h4><p>Check that each driver's route is correctly assigned in Bioledger. If a driver asks to add an account, always ask WHY first — it may be a missed stop from the prior day, not a legitimately new addition.</p></div></div>
+    <div class="step"><div class="step-n">2</div><div class="step-b"><h4>Review Reported Problems (Previous Day)</h4><p>Identify any problems logged by drivers (blocked access, full container, customer closed, etc.). Record all issues in the Excel log with account name, problem type, driver, and date. Generate Work Orders for follow-up.</p></div></div>
+    <div class="step"><div class="step-n">3</div><div class="step-b"><h4>Approve Tickets from the Previous Day</h4><p>Once routes and problems are reviewed, approve the previous day's tickets in Bioledger. This validates the data and ensures loads are correctly registered for traceability.</p></div></div>
+  </div>
+  <div class="info-box"><p><strong>Bioledger Support:</strong> If you experience any system issue, email support@bioledger.io (TO), stephanie@bioledger.io and michalina@bioledger.io (CC), and angela@fatty-chem.com (CC). Contact in the morning — Bioledger's team is based in Europe. Always include: account name, date, route name, and a description of the issue.</p></div>
+</div>`,
+      quiz: [
+        { q:"How is net lbs collected calculated for the Route Analysis Spreadsheet?", opts:["The driver's estimate of container fullness at each stop","The difference between the Light Weight Ticket and the Heavy Weight Ticket","Multiplying total stops by the average container capacity","The total gallons collected divided by the truck capacity"], ans:1, exp:"Net lbs = Light Weight Ticket subtracted from Heavy Weight Ticket. Accuracy here is critical — the Route Analysis spreadsheet feeds management reporting and is used to evaluate route performance against targets." },
+        { q:"When must a Bioledger ticket be closed as EPA Collection instead of EU Collection?", opts:["When the collection occurs on a weekend","When the customer has an outdoor container","When the driver — not a restaurant representative — signed the document","When the volume collected is below 200 lbs"], ans:2, exp:"A driver signature is NEVER acceptable for EU Collection. The signature must come from an authorized person at the customer's location. A driver-signed ticket does not meet ISCC chain-of-custody requirements and must be closed as EPA. The driver must also be notified immediately." },
+        { q:"What are the four fields that must be verified before closing any Bioledger ticket?", opts:["Driver name, truck ID, route date, and container type","Raw Material (UCO), EU RED Compliance (Yes), Total Default Value (No), and valid customer signature on file","Customer name, gallons collected, yield percentage, and RIN number","Collection type, driver license, departure time, and weight ticket number"], ans:1, exp:"All four must be checked on every ticket: (1) Raw Material = Used Cooking Oil, (2) EU RED Compliance = Yes, (3) Total Default Value = No, (4) valid customer signature present. If any field is incorrect or the signature is missing, do not close the ticket." },
+        { q:"A driver asks you to add an account to their route mid-day. What should you do first?", opts:["Add it immediately so they can continue their route without delay","Always ask WHY before making the change — it may be a missed stop from the prior day, not a new addition","Deny the request — routes cannot be changed once the driver has departed","Email Angela for approval before making any route changes"], ans:1, exp:"Always ask why before adding an account. The driver may have missed it the day before rather than it being a genuinely new stop. Understanding the reason determines whether the account should be added." },
+        { q:"How often should open Work Orders be reviewed and updated?", opts:["Weekly, on Fridays before end of day","Whenever a driver reports a completed job","Every day — an open work order is an open commitment","Monthly, when compiling the operations report for Angela"], ans:2, exp:"Work orders must be reviewed and updated every day, not at the end of the week. The WO System only works if it is kept current. An open work order is an open commitment to a customer or internal action." }
+      ]
+    },
+    {
+      title: 'Your Team, Processes & Special Accounts',
+      sub: 'Drivers, Noe, UCO flow, and key account protocols',
+      content: `
+<div class="mod-header">
+  <div class="mod-num-label">Module 3 of 4</div>
+  <div class="mod-title">Your Team, Processes & Special Accounts</div>
+  <div class="mod-desc">This module covers how to manage the driver team, coordinate with Noe, understand the end-to-end UCO collection flow, and execute the special protocols for key accounts.</div>
+</div>
+<div class="section">
+  <h2>UCO Driver Duties — Every Route, Every Day</h2>
+  <ul>
+    <li>Unlock each container before servicing</li>
+    <li>Measure and accurately record the contents of each container</li>
+    <li>Siphon all contents from the container, excluding trash or contaminants</li>
+    <li>Inspect and replace grills, rods, and locks where applicable</li>
+    <li>Complete all Bioledger service tickets on site with accurate and complete information</li>
+    <li>If a location is not assigned on the daily route, contact the dispatcher immediately so it can be added</li>
+    <li>If a container is excessively dirty or damaged, take a photo and send it to the dispatcher so a work order can be created</li>
+  </ul>
+  <p><strong>Required equipment — every driver, every route:</strong> Absorbent powder (2–3 bags), shovel, pick, proper fittings (Walmart, Main Event, etc.), general tools.</p>
+</div>
+<div class="section">
+  <h2>The UCO Collection Flow — End to End</h2>
+  <div class="steps">
+    <div class="step"><div class="step-n">1</div><div class="step-b"><h4>Customer generates UCO</h4><p>Restaurant, supermarket, hotel, or other commercial kitchen produces used cooking oil from frying operations.</p></div></div>
+    <div class="step"><div class="step-n">2</div><div class="step-b"><h4>UCO stored in Fatty Chem container</h4><p>Noe installs the appropriate container at onboarding — indoor tank or outdoor unit, sized to the customer's volume.</p></div></div>
+    <div class="step"><div class="step-n">3</div><div class="step-b"><h4>Driver arrives and pumps UCO</h4><p>UCO Driver arrives on schedule and pumps the UCO from the container into the truck. Supervised by the Route & Logistics Leader.</p></div></div>
+    <div class="step"><div class="step-n">4</div><div class="step-b"><h4>Volume recorded in Bioledger</h4><p>Driver logs the collection on site in real time. Critical for ISCC traceability and chain-of-custody documentation.</p></div></div>
+    <div class="step"><div class="step-n">5</div><div class="step-b"><h4>UCO transported to Los Fresnos</h4><p>Driver transports collected oil to our processing plant in Los Fresnos, Texas.</p></div></div>
+    <div class="step"><div class="step-n">6</div><div class="step-b"><h4>Processing &amp; yield measurement</h4><p>UCO is processed and yield is calculated at the plant. Yield typically runs 75–95% depending on oil quality and container type.</p></div></div>
+    <div class="step"><div class="step-n">7</div><div class="step-b"><h4>Processed UCO sold</h4><p>Management sells the processed UCO to renewable energy buyers (biodiesel and renewable diesel producers).</p></div></div>
+  </div>
+</div>
+<div class="section">
+  <h2>Customer Payment Model</h2>
+  <p>Most customers receive payment for their UCO, based on a percentage of the current UCO market price. Payment rates vary by volume, customer relationship, and oil quality. Very small or low-volume accounts must be identified and reported.</p>
+  <div class="callout"><div class="clabel">Important</div><p>Any customer questions about collected lbs, payments, pricing, or rates must be escalated to Angela. Angela will provide the appropriate information and response. Do not address payment or pricing questions directly with customers.</p></div>
+</div>
+<div class="section">
+  <h2>Special Account Protocols</h2>
+  <table class="dtable">
+    <tr><th>Account</th><th>Frequency</th><th>Special Requirements</th></tr>
+    <tr><td><strong>SpaceX</strong></td><td>Weekly — every Monday</td><td>Prepare printed manifest for driver before departure. After return, scan and email manifest to SpaceX contacts (CC Angela). At month-end, send a Certificate of Recycling to SpaceX.</td></tr>
+    <tr><td><strong>Wingstop</strong><br>(Upper Valley &amp; Lower Valley)</td><td>Weekly — every Monday<br><strong>TOP PRIORITY</strong></td><td>Must be serviced every Monday without exception. On Tuesdays, verify all Wingstop locations were completed. If any location was missed, schedule service immediately — the service agreement requires weekly coverage.</td></tr>
+    <tr><td><strong>Mexican Snacks</strong></td><td>Weekly — confirm via group chat</td><td><strong>CRITICAL: This oil must NOT be mixed with other oil.</strong> It is classified as clean oil and must be kept completely separate from all other collections. Confirm through group chat each week whether service is needed.</td></tr>
+    <tr><td><strong>SeaPak</strong></td><td>Every Monday + end of month</td><td>Regular weekly pickup every Monday. One day before month-end, confirm the end-of-month pickup through the group chat so it can be properly scheduled.</td></tr>
+    <tr><td><strong>Winnuts</strong></td><td>Specific day &amp; time per agreement</td><td>New account with a specific service day and time. Confirm all scheduling details with Marcus to ensure full compliance with the service agreement.</td></tr>
+  </table>
+</div>`,
+      quiz: [
+        { q:"Which of the following is required equipment every driver must carry on every route?", opts:["A company laptop and printed customer contracts","Absorbent powder (2-3 bags), shovel, pick, proper fittings, and general tools","A company credit card for fuel and supplies","A printed manifest for every individual stop"], ans:1, exp:"Required equipment every driver, every route: absorbent powder (2-3 bags), shovel, pick, proper fittings (Walmart, Main Event, etc.), and general tools. Having these ensures drivers can handle container issues, spills, and equipment problems without having to abort the route." },
+        { q:"What is the critical rule about Mexican Snacks oil?", opts:["It can only be collected on Mondays — never any other day","It must be given priority over all other collections that week","It must NOT be mixed with other oil — it is classified as clean oil and must be kept completely separate","It requires a printed manifest to be emailed to the customer after every pickup"], ans:2, exp:"Mexican Snacks oil is classified as clean oil and must NEVER be mixed with any other collection. This is a critical requirement — mixing it with other oil would contaminate its clean classification and violate the terms of the service agreement." },
+        { q:"SpaceX requires service every Monday. What must happen AFTER the driver returns from a SpaceX route?", opts:["The driver must call SpaceX to confirm the service is complete","The dispatcher must scan the manifest and email it to SpaceX contacts (CC Angela), and at month-end send a Certificate of Recycling","The dispatcher must update Bioledger with a special EU certification tag","Angela must personally approve the collection before the ticket is closed"], ans:1, exp:"After every SpaceX service: (1) scan and email the manifest to SpaceX contacts with CC to Angela. Additionally, at the end of each month, a Certificate of Recycling must be sent to SpaceX. Both steps are contractual requirements." },
+        { q:"In the UCO Collection Flow, who is responsible for installing the container at a new customer's location?", opts:["The UCO Driver assigned to that route","The Route & Logistics Leader, during the sales handoff meeting","Noe, at customer onboarding","Andres or Angela, for all new accounts"], ans:2, exp:"Noe handles all container installations at new customer locations. When the sales team closes a new account, the Route & Logistics Leader coordinates with Noe to schedule the container installation — this is one of the four key steps in the new account onboarding process." },
+        { q:"A customer asks the dispatcher directly about why their payment was lower this month. What is the correct response?", opts:["Explain the yield calculation and current UCO market price to the customer","Look up the account in Bioledger and provide the collected lbs figure to the customer","Escalate to Angela — all payment, pricing, and rate questions from customers must go through Angela","Tell the customer to contact Andres Perez directly"], ans:2, exp:"Any customer question about collected lbs, payments, pricing, or rates must be escalated to Angela. Angela will provide the appropriate information and response. The dispatcher should not address payment or pricing questions directly with customers." }
+      ]
+    },
+    {
+      title: 'Performance, Communication & Policies',
+      sub: 'KPIs, conduct standards, incident reporting, and key terms',
+      content: `
+<div class="mod-header">
+  <div class="mod-num-label">Module 4 of 4</div>
+  <div class="mod-title">Performance, Communication & Policies</div>
+  <div class="mod-desc">This module covers how performance is measured, communication expectations with each part of the team, the policies that govern the operation, and the key industry terms you need to know.</div>
+</div>
+<div class="section">
+  <h2>Performance Metrics</h2>
+  <table class="dtable">
+    <tr><th>Metric</th><th>Target</th><th>Frequency</th></tr>
+    <tr><td>Route Completion Rate</td><td>100% — all scheduled stops completed</td><td>Daily</td></tr>
+    <tr><td>Bioledger Accuracy</td><td>Zero missing or unresolved entries</td><td>Daily</td></tr>
+    <tr><td>Daily Reporting to Angela</td><td>Summary provided every day without prompting</td><td>Daily</td></tr>
+    <tr><td>On-Time Service Rate</td><td>No recurring late or missed stops per customer</td><td>Weekly</td></tr>
+    <tr><td>Total Volume Collected</td><td>Track vs. prior week/month baseline</td><td>Weekly &amp; Monthly</td></tr>
+    <tr><td>Route Efficiency</td><td>Improve lbs/stop and lbs/mile over time</td><td>Monthly</td></tr>
+    <tr><td>Customer Complaints</td><td>Zero unresolved field-level complaints</td><td>Weekly</td></tr>
+    <tr><td>Container Exchange Timeliness</td><td>New installs completed within agreed timeframe</td><td>Per job</td></tr>
+  </table>
+</div>
+<div class="section">
+  <h2>Communication Expectations</h2>
+  <table class="dtable">
+    <tr><th>With</th><th>Expectations</th></tr>
+    <tr><td><strong>Angela (Direct Supervisor)</strong></td><td>Daily end-of-day summary — routes completed, volumes, any issues. Immediately: any incident, accident, customer escalation, driver conduct issue, or compliance concern. Weekly: general operations review.</td></tr>
+    <tr><td><strong>UCO Drivers</strong></td><td>Morning briefing before routes depart — every day, no exceptions. Available by phone throughout the day. End-of-day debrief for volume reports and customer notes. Regular individual feedback.</td></tr>
+    <tr><td><strong>Noe</strong></td><td>Daily schedule coordination every morning — confirm jobs, priorities, and timing. Real-time communication if customer timelines shift. Weekly look-ahead on upcoming new customer installations.</td></tr>
+    <tr><td><strong>Sales Team</strong></td><td>Receive new account handoffs as salespeople close customers. Confirm container install timing with Noe and communicate back to the salesperson. Flag any operational issues with a new stop.</td></tr>
+    <tr><td><strong>Customers (Field Level)</strong></td><td>Be professional and represent Fatty Chem well. Resolve what is within your authority immediately. Escalate to Angela anything involving payment, pricing, contract terms, or commitments.</td></tr>
+  </table>
+</div>
+<div class="section">
+  <h2>Driver Conduct Standards</h2>
+  <ul>
+    <li>Arrive on time and ready to work every scheduled day</li>
+    <li>Complete all assigned stops — skipping a stop without authorization is not acceptable</li>
+    <li>Treat customers, their staff, and their property with respect and professionalism</li>
+    <li>Keep vehicles clean and report any mechanical issues immediately — before the vehicle departs</li>
+    <li>Never make commitments to customers on behalf of Fatty Chem — pricing, payment terms, or service changes are management decisions only</li>
+    <li>Report spills, accidents, or incidents to the dispatcher immediately</li>
+    <li>Log all collections in Bioledger accurately and on time</li>
+  </ul>
+</div>
+<div class="section">
+  <h2>Incident Reporting — Report Immediately to Angela</h2>
+  <p>The following must be reported to Angela right away — <strong>not at end of day:</strong></p>
+  <ul>
+    <li>Vehicle accident or damage</li>
+    <li>UCO spill on customer property or public roads</li>
+    <li>Driver injury or medical emergency</li>
+    <li>Significant customer complaint or confrontation</li>
+    <li>Theft or suspected theft of oil, equipment, or company property</li>
+    <li>Any ISCC or regulatory compliance concern</li>
+  </ul>
+  <div class="callout"><div class="clabel">Vehicle &amp; Equipment Policy</div><p>Coordinate all preventive maintenance with Anabelle. Report mechanical issues, damages, or parts needed immediately so administration can address them efficiently. <strong>Ensure all trucks and equipment are road-ready at all times.</strong></p></div>
+</div>
+<div class="section">
+  <h2>Key Industry Terms</h2>
+  <table class="dtable">
+    <tr><th>Term</th><th>What It Means</th></tr>
+    <tr><td><strong>UCO</strong></td><td>Used Cooking Oil — the commodity we collect from commercial kitchens and process for resale to renewable energy producers.</td></tr>
+    <tr><td><strong>Yield</strong></td><td>The percentage of collected UCO that is usable after processing — typically 75 to 95%. Affected by water content, oil quality, and container type.</td></tr>
+    <tr><td><strong>Bioledger</strong></td><td>Our digital traceability platform. Records every UCO collection — customer, date, driver, volume. Required for ISCC compliance and chain-of-custody documentation.</td></tr>
+    <tr><td><strong>ISCC</strong></td><td>International Sustainability and Carbon Certification. Verifies the Fatty Chem UCO supply chain meets global sustainability and traceability standards — required by most premium renewable fuel buyers.</td></tr>
+    <tr><td><strong>Chain of Custody</strong></td><td>The documented trail tracking UCO from collection at a kitchen all the way to delivery to the fuel producer. Required by ISCC and verified through Bioledger.</td></tr>
+    <tr><td><strong>RIN</strong></td><td>Renewable Identification Number. A U.S. regulatory credit tied to renewable fuel production. Higher RIN values mean higher UCO prices.</td></tr>
+    <tr><td><strong>Exchange / Swap</strong></td><td>The replacement of a customer's container with a different size or type, coordinated by Noe when volumes or needs change.</td></tr>
+    <tr><td><strong>RGV</strong></td><td>Rio Grande Valley — the deep South Texas region along the U.S.-Mexico border where our operations are headquartered.</td></tr>
+  </table>
+</div>`,
+      quiz: [
+        { q:"Which performance metric must be achieved at 100% — every single day?", opts:["Route Efficiency (lbs/stop and lbs/mile improvement)","Container Exchange Timeliness","Route Completion Rate — all scheduled stops completed","On-Time Service Rate"], ans:2, exp:"Route Completion Rate is tracked daily and the target is 100% — all scheduled stops completed. This is the most fundamental daily performance measure. All other metrics can be trended weekly or monthly, but no stops can be left uncompleted without accountability." },
+        { q:"Which of the following events must be reported to Angela IMMEDIATELY — not at end of day?", opts:["A driver who arrived 15 minutes late to their route start","A minor customer question about payment timing","A vehicle accident, UCO spill on customer property, or any ISCC compliance concern","A driver requesting the following day off"], ans:2, exp:"Vehicle accidents, UCO spills on customer property or public roads, driver injuries, significant customer confrontations, theft, and ISCC compliance concerns must all be reported to Angela immediately — not at end of day." },
+        { q:"What does 'Chain of Custody' mean in Fatty Chem's operations?", opts:["The driver sign-off protocol for end-of-day vehicle inspection","The documented trail tracking UCO from collection at a kitchen all the way to delivery to the fuel producer — required by ISCC and verified through Bioledger","The payment chain from Fatty Chem to the customer","The management approval chain for route changes"], ans:1, exp:"Chain of Custody is the documented trail tracking UCO from collection at a customer's kitchen all the way to delivery to the renewable fuel producer. It is required by ISCC and verified through Bioledger. Every link in the chain must be recorded and accurate." },
+        { q:"What does a RIN (Renewable Identification Number) represent?", opts:["The Fatty Chem driver's route identification code in Bioledger","The customer's container size classification","A U.S. regulatory credit tied to renewable fuel production — higher RIN values mean higher UCO prices","The ISCC audit number assigned during annual certification"], ans:2, exp:"A RIN (Renewable Identification Number) is a U.S. regulatory credit tied to renewable fuel production under the Renewable Fuel Standard (RFS). Higher RIN values increase the market price of UCO — which is why EU-certified collections are more valuable than EPA-only collections." },
+        { q:"Who is responsible for coordinating all preventive maintenance schedules for trucks and equipment?", opts:["The Route & Logistics Leader handles all maintenance directly","Maintenance is coordinated with Anabelle in administration","Each driver is responsible for scheduling their own vehicle's maintenance","Angela approves all maintenance work orders before scheduling"], ans:1, exp:"Vehicle and equipment maintenance is coordinated with Anabelle (the main office admin). The Route & Logistics Leader must report mechanical issues, damages, or parts needed immediately so Anabelle can address and resolve them efficiently." }
+      ]
+    }
+  ]
+}
+
+}; // end COURSES
+
+// ═══════════════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════════════
+let enrollment = null;
+let courseData  = null;
+let progress    = {}; // moduleIndex -> {completed, quizScore}
+let quizState   = {}; // moduleIndex -> {currentQ, answers, submitted, score, passed}
+let currentMod  = 0;
+let scriptUrl   = localStorage.getItem('fc_lms_script_url') || '';
+
+// ═══════════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════════
+async function init() {
+  const params = new URLSearchParams(window.location.search);
+  const token  = params.get('token');
+
+  if (!token) { showError('No Training Link Found', 'This page requires a valid training link. Please contact your manager to receive your training invitation.'); return; }
+  if (!scriptUrl) { showError('System Not Configured', 'The LMS backend has not been configured yet. Please contact your manager.'); return; }
+
+  try {
+    const res = await fetch(`${scriptUrl}?action=getEnrollment&token=${token}`);
+    const data = await res.json();
+    if (!data.success || !data.enrollment) { showError('Link Not Found', 'This training link is invalid or has expired. Contact your manager for a new link.'); return; }
+    enrollment = data.enrollment;
+    courseData  = COURSES[enrollment.courseId];
+    if (!courseData) { showError('Course Not Found', `Course "${enrollment.courseId}" is not available. Please contact your manager.`); return; }
+
+    // Load progress
+    const progRes  = await fetch(`${scriptUrl}?action=getProgress&token=${token}`);
+    const progData = await progRes.json();
+    if (progData.success && progData.progress) {
+      progData.progress.forEach(p => {
+        progress[Number(p.moduleIndex)] = { completed: String(p.completed) === 'true', quizScore: Number(p.quizScore) || 0 };
+      });
+    }
+
+    // Init quiz state per module
+    courseData.modules.forEach((_, i) => {
+      quizState[i] = { currentQ: 0, answers: {}, submitted: false, score: 0, passed: false };
+      if (progress[i] && progress[i].completed) {
+        quizState[i].passed = true;
+        quizState[i].score  = courseData.modules[i].quiz.length;
+      }
+    });
+
+    // Render
+    document.getElementById('loading').style.display    = 'none';
+    document.getElementById('app').style.display        = 'flex';
+    document.getElementById('sb-name').textContent      = enrollment.employeeName;
+    document.getElementById('sb-course').textContent    = enrollment.courseName;
+    document.title = `${courseData.title} — Fatty Chem`;
+
+    buildSidebar();
+    showModule(0);
+
+  } catch(err) {
+    showError('Connection Error', 'Could not connect to the training system. Please check your internet connection and try again, or contact your manager.');
+  }
+}
+
+function showError(title, msg) {
+  document.getElementById('loading').style.display      = 'none';
+  document.getElementById('error-screen').style.display = 'flex';
+  document.getElementById('err-title').textContent      = title;
+  document.getElementById('err-msg').textContent        = msg;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  SIDEBAR
+// ═══════════════════════════════════════════════════════════════
+function buildSidebar() {
+  const wrap = document.getElementById('sb-modules');
+  wrap.innerHTML = courseData.modules.map((m, i) => `
+    <div class="sb-mod ${progress[i]?.completed ? 'done' : ''} ${i === currentMod ? 'active' : ''}" id="sb-mod-${i}" onclick="showModule(${i})">
+      <div class="mod-num" id="sb-num-${i}">${progress[i]?.completed ? '✓' : i + 1}</div>
+      <div class="mod-info">
+        <div class="mod-name">${esc(m.title)}</div>
+        <div class="mod-sub">${esc(m.sub || '')}</div>
+      </div>
+    </div>
+  `).join('');
+  updateProgress();
+}
+
+function updateProgress() {
+  const total    = courseData.modules.length;
+  const done     = courseData.modules.filter((_, i) => progress[i]?.completed).length;
+  const pct      = Math.round(done / total * 100);
+  document.getElementById('sb-prog-fill').style.width = pct + '%';
+  document.getElementById('sb-pct').textContent       = pct + '%';
+
+  const statusMap = { not_started: 'Not Started', in_progress: 'In Progress', completed: 'Completed' };
+  const badge     = document.getElementById('tb-status-badge');
+  const label     = done === total ? 'Completed' : done > 0 ? 'In Progress' : 'Not Started';
+  badge.textContent  = label;
+  badge.style.background = done === total ? '#e8f4e8' : done > 0 ? '#fff4dc' : '#f4f5f7';
+  badge.style.color      = done === total ? '#2d6a2d' : done > 0 ? '#b87b00' : '#888';
+  badge.style.borderColor= done === total ? '#90c890' : done > 0 ? '#f0d080' : '#e5e7eb';
+
+  // Update sidebar items
+  courseData.modules.forEach((_, i) => {
+    const modEl  = document.getElementById('sb-mod-' + i);
+    const numEl  = document.getElementById('sb-num-' + i);
+    if (!modEl) return;
+    modEl.classList.toggle('done',   !!progress[i]?.completed);
+    modEl.classList.toggle('active', i === currentMod);
+    numEl.textContent = progress[i]?.completed ? '✓' : i + 1;
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  MODULE RENDERING
+// ═══════════════════════════════════════════════════════════════
+function showModule(idx) {
+  currentMod = idx;
+  const mod  = courseData.modules[idx];
+  const qs   = quizState[idx];
+  const isLast = idx === courseData.modules.length - 1;
+  const allDone = courseData.modules.every((_, i) => progress[i]?.completed);
+
+  document.getElementById('tb-crumb').innerHTML = `${esc(courseData.title)} <strong>/ Module ${idx + 1}: ${esc(mod.title)}</strong>`;
+
+  let completionHtml = '';
+  if (allDone) {
+    completionHtml = `<div class="complete-banner"><div class="trophy">🏆</div><h2>Course Complete — Well Done!</h2><p>You've completed all ${courseData.modules.length} modules. You're ready. Go make it happen.</p></div>`;
+  }
+
+  document.getElementById('module-content').innerHTML = `
+    ${completionHtml}
+    ${mod.content}
+    <div id="quiz-wrap">
+      <div class="quiz-head"><h2>Module ${idx + 1} Quiz</h2><p>5 questions · Need 4/5 to pass · Your progress is saved automatically</p></div>
+      <div id="quiz-body"></div>
+    </div>
+    <div class="mod-nav">
+      ${idx > 0 ? `<button class="btn btn-secondary" onclick="showModule(${idx - 1})">← Prev Module</button>` : '<span></span>'}
+      ${!isLast ? `<button class="btn btn-primary" onclick="showModule(${idx + 1})">Next Module →</button>` : `<button class="btn btn-dark" onclick="showModule(0)">↩ Back to Module 1</button>`}
+    </div>
+  `;
+
+  renderQuiz(idx);
+  updateProgress();
+  window.scrollTo(0, 0);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  QUIZ
+// ═══════════════════════════════════════════════════════════════
+function renderQuiz(modIdx) {
+  const body = document.getElementById('quiz-body');
+  if (!body) return;
+  const mod  = courseData.modules[modIdx];
+  const qs   = quizState[modIdx];
+  const quiz = mod.quiz;
+
+  // If already passed and progress saved, show complete state
+  if (qs.passed && progress[modIdx]?.completed) {
+    body.innerHTML = `<div class="result" style="margin-top:0">
+      <div style="font-size:40px;margin-bottom:8px">✅</div>
+      <div class="pass-msg">Module ${modIdx + 1} Complete!</div>
+      <div style="font-size:13px;color:#888;margin-bottom:16px">Score: ${progress[modIdx].quizScore}/${quiz.length} · ${Math.round(progress[modIdx].quizScore/quiz.length*100)}%</div>
+      <button class="btn btn-secondary" onclick="retakeQuiz(${modIdx})" style="font-size:12px">Retake for practice</button>
+    </div>`;
+    return;
+  }
+
+  if (qs.submitted) {
+    renderQuizResult(modIdx);
+    return;
+  }
+
+  const q       = quiz[qs.currentQ];
+  const letters = ['A','B','C','D'];
+  const answered = qs.answers[qs.currentQ] !== undefined;
+  const isLast   = qs.currentQ === quiz.length - 1;
+
+  const dots = quiz.map((_, i) => {
+    let cls = 'q-dot';
+    if (qs.answers[i] !== undefined) cls += ' ans';
+    return `<div class="${cls}"></div>`;
+  }).join('');
+
+  const opts = q.opts.map((opt, i) => {
+    let cls = 'opt';
+    if (answered) {
+      if (i === qs.answers[qs.currentQ] && i === q.ans) cls += ' ok';
+      else if (i === qs.answers[qs.currentQ]) cls += ' bad';
+      else if (i === q.ans) cls += ' show-ok';
+    }
+    return `<div class="${cls}" onclick="selectAnswer(${modIdx},${i})">
+      <div class="opt-ltr">${letters[i]}</div>${esc(opt)}
+    </div>`;
+  }).join('');
+
+  let explainHtml = '';
+  if (answered) {
+    const correct = qs.answers[qs.currentQ] === q.ans;
+    explainHtml = `<div class="explain ${correct ? 'ok-exp' : 'bad-exp'}">${correct ? '✓ Correct! ' : '✗ Not quite. '}${esc(q.exp)}</div>`;
+  }
+
+  body.innerHTML = `
+    <div class="q-dots">${dots}</div>
+    <div class="q-num">Question ${qs.currentQ + 1} of ${quiz.length}</div>
+    <div class="q-text">${esc(q.q)}</div>
+    <div class="opts">${opts}</div>
+    ${explainHtml}
+    <div class="quiz-nav">
+      <span class="qctr">${Object.keys(qs.answers).length}/${quiz.length} answered</span>
+      <div style="display:flex;gap:8px">
+        ${qs.currentQ > 0 ? `<button class="btn btn-secondary" onclick="quizNav(${modIdx},-1)">← Prev</button>` : ''}
+        ${answered && !isLast ? `<button class="btn btn-primary" onclick="quizNav(${modIdx},1)">Next →</button>` : ''}
+        ${answered && isLast ? `<button class="btn btn-primary" onclick="submitQuiz(${modIdx})">Submit Quiz</button>` : ''}
+      </div>
+    </div>
+  `;
+}
+
+function renderQuizResult(modIdx) {
+  const body = document.getElementById('quiz-body');
+  const mod  = courseData.modules[modIdx];
+  const qs   = quizState[modIdx];
+  const total = mod.quiz.length;
+  const wrong = total - qs.score;
+
+  if (qs.passed) {
+    body.innerHTML = `<div class="result">
+      <div style="font-size:40px;margin-bottom:8px">🎉</div>
+      <div class="pass-msg">Module ${modIdx + 1} Complete!</div>
+      <div class="result-stats">
+        <div><div class="rs-n ok">${qs.score}</div><div class="rs-l">Correct</div></div>
+        <div><div class="rs-n bad">${wrong}</div><div class="rs-l">Incorrect</div></div>
+        <div><div class="rs-n" style="color:#e8a020">${Math.round(qs.score/total*100)}%</div><div class="rs-l">Score</div></div>
+      </div>
+      ${modIdx < courseData.modules.length - 1 ? `<button class="btn btn-primary" onclick="showModule(${modIdx + 1})" style="margin-top:8px">Continue to Module ${modIdx + 2} →</button>` : '<div style="color:#2d6a2d;font-weight:700;margin-top:12px;font-size:15px">🏆 All modules complete!</div>'}
+    </div>`;
+  } else {
+    body.innerHTML = `<div class="result">
+      <div class="fail-msg">Not quite — ${qs.score}/${total}. Need ${Math.ceil(total * 0.8)} to pass.</div>
+      <div style="font-size:13px;color:#666;margin:8px 0 16px;line-height:1.6">Review the module content above and try again. All the answers are in the reading.</div>
+      <button class="btn btn-dark" onclick="retakeQuiz(${modIdx})">Retake Quiz</button>
+    </div>`;
+  }
+}
+
+function selectAnswer(modIdx, optIdx) {
+  const qs = quizState[modIdx];
+  if (qs.submitted) return;
+  if (qs.answers[qs.currentQ] !== undefined) return;
+  qs.answers[qs.currentQ] = optIdx;
+  renderQuiz(modIdx);
+}
+
+function quizNav(modIdx, dir) {
+  quizState[modIdx].currentQ = Math.max(0, Math.min(courseData.modules[modIdx].quiz.length - 1, quizState[modIdx].currentQ + dir));
+  renderQuiz(modIdx);
+}
+
+async function submitQuiz(modIdx) {
+  const qs   = quizState[modIdx];
+  const quiz = courseData.modules[modIdx].quiz;
+  qs.submitted = true;
+  qs.score     = quiz.reduce((acc, q, i) => acc + (qs.answers[i] === q.ans ? 1 : 0), 0);
+  qs.passed    = qs.score >= Math.ceil(quiz.length * 0.8);
+
+  if (qs.passed) {
+    progress[modIdx] = { completed: true, quizScore: qs.score };
+    // Save to backend
+    try {
+      await fetch(scriptUrl, {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'saveProgress',
+          token: enrollment.token,
+          moduleIndex: modIdx,
+          moduleTitle: courseData.modules[modIdx].title,
+          completed: true,
+          quizScore: qs.score
+        })
+      });
+      // Check if all modules done
+      const allDone = courseData.modules.every((_, i) => progress[i]?.completed);
+      if (allDone) {
+        const totalScore = Math.round(courseData.modules.reduce((acc, m, i) => acc + (progress[i]?.quizScore || 0), 0) / courseData.modules.length / 5 * 100);
+        await fetch(scriptUrl, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'completeCourse', token: enrollment.token, finalScore: totalScore })
+        });
+      }
+    } catch(e) { /* silently fail — progress already in memory */ }
+    updateProgress();
+  }
+  renderQuizResult(modIdx);
+}
+
+function retakeQuiz(modIdx) {
+  quizState[modIdx] = { currentQ: 0, answers: {}, submitted: false, score: 0, passed: false };
+  renderQuiz(modIdx);
+}
+
+function esc(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Start ───────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

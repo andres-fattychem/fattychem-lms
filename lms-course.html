@@ -757,6 +757,8 @@ let scriptUrl   = localStorage.getItem('fc_lms_script_url') || '';
 async function init() {
   const params = new URLSearchParams(window.location.search);
   const token  = params.get('token');
+  const apiParam = params.get('api');
+  if (apiParam) { scriptUrl = apiParam; localStorage.setItem('fc_lms_script_url', scriptUrl); }
 
   if (!token) { showError('No Training Link Found', 'This page requires a valid training link. Please contact your manager to receive your training invitation.'); return; }
   if (!scriptUrl) { showError('System Not Configured', 'The LMS backend has not been configured yet. Please contact your manager.'); return; }

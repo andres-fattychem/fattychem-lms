@@ -498,7 +498,8 @@ async function loadEnrollments() {
 
 async function resendInvite(token, name) {
   try {
-    await api({action:'resendInvite', adminKey, token});
+    const res = await api({action:'resendInvite', adminKey, token});
+    if (res.error) { alert('Error: ' + res.error); return; }
     alert(`Invite email resent to ${name}.`);
   } catch(err) { alert(err.message); }
 }
